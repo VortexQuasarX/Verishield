@@ -1,66 +1,71 @@
-# 🛡️ VeriShield - Employee Background Verification Platform
-
-
-<h3 align="center">VeriShield</h3>
+# 🛡️ VeriShield - AI Background Verification Platform
 
 <p align="center">
   <strong>Next-Generation AI-Driven Background Verification & Fraud Prevention Platform</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/VortexQuasarX/Verishield"><img src="https://img.shields.io/github/stars/VortexQuasarX/Verishield?style=for-the-badge&color=blue" alt="Stars"/></a>
-  <a href="https://github.com/VortexQuasarX/Verishield/issues"><img src="https://img.shields.io/github/issues/VortexQuasarX/Verishield?style=for-the-badge&color=red" alt="Issues"/></a>
-  <img src="https://img.shields.io/badge/Stack-Next.js%20%7C%20Angular%20%7C%20Prisma%20%7C%20SQLite-darkgreen?style=for-the-badge" alt="Technology Stack"/>
-  <img src="https://img.shields.io/badge/Security-AI--Proctoring%20%7C%20ChainSeal%20Ledger-orange?style=for-the-badge" alt="Security"/>
+  <a href="https://github.com/VortexQuasarX/Verishield"><img src="https://img.shields.io/github/stars/VortexQuasarX/Verishield?style=for-the-badge&color=7C3AED&labelColor=1E1E2E" alt="Stars"/></a>
+  <a href="https://github.com/VortexQuasarX/Verishield/issues"><img src="https://img.shields.io/github/issues/VortexQuasarX/Verishield?style=for-the-badge&color=EF4444&labelColor=1E1E2E" alt="Issues"/></a>
+  <img src="https://img.shields.io/badge/Stack-Next.js%20%7C%20Angular%20%7C%20Prisma%20%7C%20SQLite-10B981?style=for-the-badge&labelColor=1E1E2E" alt="Stack"/>
+  <img src="https://img.shields.io/badge/Security-AI--Proctoring%20%7C%20ChainSeal%20Ledger-F59E0B?style=for-the-badge&labelColor=1E1E2E" alt="Security"/>
 </p>
 
 ---
 
 ## 📖 Overview
 
-**VeriShield** is an advanced, corporate-grade candidate background verification platform engineered to eradicate identity spoofing, credential fabrication, and candidate substitution. By combining **biometric AI engines**, **interactive automated messaging**, and a **cryptographic ledger**, VeriShield guarantees tamper-proof verification pipelines for high-trust hiring environments.
+**VeriShield** is a state-of-the-art employee background verification platform designed to eliminate identity fraud, credentials falsification, and candidate impersonation. By utilizing real-time biometric AI engines, automated communication channels, and secure cryptographic ledger hashes, VeriShield builds trust into hiring pipelines.
 
-Standard screening platforms depend on delayed, manual, and error-prone document reviews. VeriShield introduces **automated candidate interaction**, **real-time deepfake audio/video checks**, and **blockchain-anchored proof of verification**—all consolidated under a sleek, modern administration control center.
+VeriShield replaces standard slower screening with **autonomous document gathering**, **proactive deepfake liveness audits**, and **tamper-proof blockchain validation**—all managed inside a clean, modern control interface.
 
 ---
 
 ## ⚡ Core Capabilities
 
-VeriShield is built on five pillars of verification intelligence:
+VeriShield operates on five core modules of verification intelligence:
 
 ### 1. 👁️ DeepGuard AI™ (Liveness & Deepfake Prevention)
-* **Real-Time Spoofing Detection**: Automatically checks for video replay attacks, printed photos, 3D masks, and pre-recorded video feeds during candidates' submissions.
-* **Deepfake Detection Engine**: Identifies AI-generated video and audio modifications using advanced neural patterns, outputting a clear, actionable **Deepfake Score** (fraud index).
-* **Tab-Switch & Proctor Monitoring**: Logs anti-cheating events (e.g., candidate leaving the verification window) to flag potential external assistance or screen recording.
+* **Active Anti-Spoofing**: Defeats replay attacks, digital photos, physical paper masks, and virtual camera feeds.
+* **Deepfake Scanner**: Processes audio and video feeds to discover synthetically modified voices or faces, outputting a dynamic **Deepfake Score** (fraud index).
+* **Proctor Monitoring**: Tracks and flags window tab-switching, frame departures, and multiple faces to prevent cheating.
 
 ### 2. 💬 ChatVerify™ (WhatsApp Bot Simulator)
-* **Automated Data Harvesting**: Conducts candidate chat workflows resembling a WhatsApp conversation. Collects user consent, personal details, and digital documents seamlessly.
-* **Interactive Document Verification Requests**: Automatically guides candidates to re-submit blurred or invalid documents in real-time, removing bottlenecks from manual operations.
+* **Automated Collection**: Conducts automated WhatsApp-style conversational interviews to collect consent, credentials, and identity documents.
+* **Instant Resubmissions**: Detects low-quality or blurry documents and requests instant high-resolution uploads.
 
-### 3. 🆔 LiveID Engine™ (Biometric & Document Cross-Matching)
-* **High-Accuracy Face Matching**: Conducts biometric mapping between the live capture selfie and the photo on official government IDs (Aadhaar Card, PAN Card, etc.).
-* **Document Authenticity Assessment**: Performs structural, text-alignment, and watermark verification on uploaded cards to confirm government issuing standards.
+### 3. 🆔 LiveID Engine™ (Biometrics Cross-Matching)
+* **Face Comparison**: Measures biometric coordinates between the candidate's live selfie and their official government-issued ID card.
+* **Integrity Audits**: Evaluates government documents (Aadhaar Card, PAN Card, etc.) for text misalignment, watermark discrepancies, or structural anomalies.
 
-### 4. 🔗 ChainSeal™ Ledger (Cryptographic Integrity)
-* **Tamper-Proof Audit Trail**: Anchors completed verification details (candidate data, completion dates, and approval logs) as SHA-256 cryptographic hashes.
-* **Verifiable Hashes**: Generates an immutable blockchain ledger hash for each completed verification, proving records have not been altered or falsified retrospectively.
+### 4. 🔗 ChainSeal™ Ledger (Cryptographic Trust)
+* **SHA-256 Anchoring**: Hashes candidate verification statuses and metrics into immutable strings.
+* **Immunity From Modification**: Generates a verifiable blockchain ledger hash for each completed verification, proving records haven't been tampered with.
 
-### 5. 🤖 Nexus AI™ (Autonomous SLA & Escalate Orchestrator)
-* **Auto-Escalation Routines**: Instantly flags high-risk applications (e.g., Deepfake Score > 80% or biometric mismatch) and re-allocates them to Senior Compliance Managers.
-* **Predictive SLA Breach Monitor**: Continuously forecasts processing delays based on active analyst pipelines and automatically alerts coordinators to optimize throughput.
+### 5. 🤖 Nexus AI™ (Self-Healing Automation)
+* **Auto-Escalation Engine**: Instantly flags verifications containing deepfake risks or biometric mismatch and re-allocates them to Senior Analysts.
+* **SLA Breach Predictor**: Evaluates overall analyst processing queues to forecast delays and automatically recommend workload optimization.
 
 ---
 
-## 🏗️ System Architecture
+## 🆚 VeriShield vs. Legacy Platforms
 
-VeriShield uses a **dual-framework hybrid architecture**. It combines a **Next.js (React) App Router** as the core backend, main user dashboard, and API hub, with a fully modular **Angular Client-Side App** configured to serve specific micro-services and user modules seamlessly.
+| Feature Capabilities | 🛡️ VeriShield Platform | ❌ Traditional Platforms |
+| :--- | :--- | :--- |
+| **Verification Speed** | **Instant (Minutes)** | Manual Review (Days to Weeks) |
+| **Fraud Prevention** | **DeepGuard AI Video Liveness & Deepfake Auditing** | None (Static files accepted) |
+| **Identity Matching** | **LiveID Biometric Face & Document OCR Matching** | Eye-ball review (High error rate) |
+| **Audit Trails** | **ChainSeal Cryptographic Ledger (SHA-256)** | Modifiable central SQL log rows |
+| **Data Collection** | **ChatVerify Interactive Chat Interface** | Long forms & clunky portal screens |
+| **Risk Escalation** | **Nexus AI Autonomous Queue Auto-Escalation** | Manual escalation reviews |
 
-### Stack Breakdown
-* **Core Framework**: Next.js 16 (App Router, TailwindCSS, Radix UI/Shadcn)
-* **Module Framework**: Angular 21 (Modular dashboard panels & micro-apps)
-* **ORM Layer**: Prisma Client v6 (SQLite database configuration)
-* **Database**: SQLite (Highly efficient local transactional storage)
-* **Script Compiler**: `tsx` (Seamless execution of TypeScript seeding & scripts)
+---
+
+## 🏗️ System Architecture & Workflow
+
+VeriShield uses a **dual-framework hybrid architecture** where **Next.js 16 (React)** serves as the API backend, main analytics dashboard, and route router, while **Angular 21** handles client-side views inside `/public/angular` on unified endpoints.
+
+### Unified Presentation Layout
 
 ```mermaid
 graph TD
@@ -86,11 +91,7 @@ graph TD
     end
 ```
 
----
-
-## 🔄 Candidate Verification Pipeline
-
-The diagram below maps the complete lifecycle of a verification workflow from candidate onboarding to final ledger writing.
+### Verification Pipeline Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -124,72 +125,133 @@ sequenceDiagram
 
 ---
 
-## 🗄️ Database Schema & Data Models
+## 📂 Project Directory Structure
 
-VeriShield organizes its records through SQLite using Prisma. Here is an overview of the core entities and their functions:
+Below is an overview of the directories and files within the hybrid platform:
 
-| Data Model | Key Parameters | Functionality |
-| :--- | :--- | :--- |
-| **`User`** | `email`, `name`, `password`, `role`, `isActive` | Manages login credentials and system privileges (e.g., `admin`, `analyst`). |
-| **`VerificationRecord`** | `verificationId`, `company`, `riskLevel`, `chainHash` | Represents the candidate's core case and links to the cryptographic hash. |
-| **`ChatSession`** / **`ChatMessage`** | `candidatePhone`, `consentGiven`, `documentsUploaded` | Captures individual ChatVerify candidate text logs, consent, and media links. |
-| **`DeepGuardCheck`** | `confidenceScore`, `deepfakeScore`, `faceMatchScore` | Stores biometric confidence markers, cheating alerts, and anti-spoof logs. |
-| **`LiveIDRecord`** | `idNumber`, `antiSpoofScore`, `checkPassed` | Archives the results of photo comparisons against government documents. |
-| **`NexusTaskRecord`** | `type` (`auto_escalation`, `sla_monitoring`), `progress` | Coordinates behind-the-scenes system task scheduling and task outputs. |
-| **`Notification`** | `userId`, `title`, `message`, `type` (`error`, `warning`) | Feeds instant status and threat alerts into the analyst user interface. |
-| **`ActivityLog`** | `action`, `details`, `category` (`auth`, `verification`) | Maintains an immutable operational audit log for platform users. |
+```ascii
+VeriShield/
+├── angular-app/                # Angular Frontend Application (Module framework)
+│   ├── src/                    # Angular TypeScript source code
+│   │   ├── app/                # Main Angular app modules and components
+│   │   │   ├── admin/          # Administration panels
+│   │   │   ├── dashboard/      # Analytic charts
+│   │   │   └── chatverify/     # Candidate interactive chat verify client
+│   │   └── environments/       # Environment files for production & local setups
+│   ├── angular.json            # Angular Workspace Configuration (builds to root /public/angular)
+│   ├── package.json            # Angular dependencies
+│   └── tsconfig.json           # Angular TypeScript rules
+├── prisma/                     # Database Configuration Layer
+│   ├── schema.prisma           # Prisma Data Model Declarations (SQLite dialect)
+│   └── seed.ts                 # TS Database Seeding Script (Generates mock records)
+├── public/                     # Public Directory & Static Asserts
+│   ├── angular/                # [Ignored] Automatically compiled Angular bundle
+│   └── logo.svg                # System branding asset
+├── src/                        # Next.js Application Source (Core Layer)
+│   ├── app/                    # Next.js App Router (React pages & API Routes)
+│   │   ├── angular/            # Middleware proxy routes to compile and proxy Angular views
+│   │   ├── api/                # REST endpoints folder
+│   │   │   ├── deepguard/      # DeepGuard AI processing APIs
+│   │   │   ├── liveid/         # Biometric and identity analysis APIs
+│   │   │   └── nexus/          # Nexus background worker controller APIs
+│   │   ├── layout.tsx          # Application shell layout
+│   │   └── page.tsx            # Main authentication & entryway router page
+│   ├── components/             # React View Components (Shadcn + Tailwind)
+│   │   ├── ui/                 # Atomic design design components
+│   │   └── shared/             # Global dashboard metrics, views, and navigation drawers
+│   ├── hooks/                  # React Custom Hooks
+│   ├── lib/                    # Library Initializations (Prisma client, Encryption store, etc.)
+│   └── types/                  # TypeScript Global Type definitions
+├── .env                        # [Ignored] Database and backend keys
+├── .gitignore                  # Git Ignore configuration
+├── bun.lock                    # Bun package dependency lock
+├── package.json                # Root package configuration (includes Next.js dev scripts)
+└── tsconfig.json               # Root TypeScript layout configuration
+```
 
 ---
 
-## 🚀 Getting Started
+## 🗄️ Database Schema & Models
 
-Deploy and run a fully configured local instance of VeriShield by following these steps.
+| Data Model | Key Parameters | Functionality |
+| :--- | :--- | :--- |
+| **`User`** | `email`, `name`, `password`, `role`, `isActive` | Account model for administrators, audit personnel, and client users. |
+| **`VerificationRecord`** | `verificationId`, `company`, `riskLevel`, `chainHash` | Represents a candidate background check profile locked by a hash. |
+| **`ChatSession`** / **`ChatMessage`** | `candidatePhone`, `consentGiven`, `documentsUploaded` | Capture candidates' active chat responses, consent values, and files. |
+| **`DeepGuardCheck`** | `confidenceScore`, `deepfakeScore`, `faceMatchScore` | Biometric results, cheating metrics, liveness details, and cheating triggers. |
+| **`LiveIDRecord`** | `idNumber`, `antiSpoofScore`, `checkPassed` | Archives scanning results of verified official documents. |
+| **`NexusTaskRecord`** | `type` (`auto_escalation`, `sla_monitoring`), `progress` | Manages operational state and output files of background processes. |
+| **`Notification`** | `userId`, `title`, `message`, `type` (`error`, `warning`) | Direct alerts on security hazards or completed actions. |
+| **`ActivityLog`** | `action`, `details`, `category` (`auth`, `verification`) | Tracks dashboard user actions for historical accountability audits. |
 
-### Prerequisites
-Make sure **Node.js** (v20+) and **NPM** (v10+) are installed.
+---
 
-### 1. Repository Setup & Dependencies
-Clone the repository and install dependencies for the Next.js core application and the Angular application:
-```bash
-# Install root core dependencies
-npm install
+## 🔌 REST API Documentation
 
-# Install Angular-specific dependencies
-cd angular-app
-npm install
-cd ..
+### 1. Authentication
+* **`POST /api/auth/login`**
+  * **Payload**: `{"email": "admin@verishield.com", "password": "secure-password"}`
+  * **Response**: `200 OK` with session cookie and user metadata.
+
+### 2. Biometric Verification
+* **`POST /api/liveid/analyze`**
+  * **Payload**: `{"selfieBase64": "...", "documentBase64": "...", "documentType": "aadhaar"}`
+  * **Response**:
+    ```json
+    {
+      "checkPassed": true,
+      "faceMatchScore": 96.7,
+      "idMatchScore": 98.2,
+      "livenessScore": 94.5
+    }
+    ```
+
+### 3. Anti-Spoofing & Deepfake Detection
+* **`POST /api/deepguard/analyze`**
+  * **Payload**: `{"videoUrl": "..."}`
+  * **Response**:
+    ```json
+    {
+      "status": "flagged",
+      "deepfakeScore": 87.3,
+      "confidenceScore": 42.1,
+      "alerts": "Fraud suspected — Ananya Desai interview (87.3% fraud score)"
+    }
+    ```
+
+### 4. Background Automations
+* **`GET /api/nexus/tasks`**
+  * **Response**: Returns a collection of automated system monitoring, auto-escalations, and SLA monitoring tasks.
+
+---
+
+## 🔑 Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+# Database Dialect URL (SQLite relative to prisma schema)
+DATABASE_URL="file:../db/custom.db"
+
+# System Ports (Used by standard services)
+PORT=3000
+
+# Authentication Secret (Used by security tokens)
+NEXTAUTH_SECRET="a-very-long-and-highly-secure-secret-key"
 ```
 
-### 2. Database Synchronization & Client Generation
-Build the local SQLite database from the Prisma schema and compile the Prisma client:
-```bash
-# Push schema changes to SQLite db
-npx prisma db push
-```
+---
 
-### 3. Populating Demo Records
-Seed the SQLite database with multi-tier test data (Candidate sessions, deepfake metrics, liveness logs):
-```bash
-# Run the TS seed file using tsx
-npx tsx prisma/seed.ts
-```
+## 🛠️ CLI Quick Start
 
-### 4. Compiling the Angular Front-End
-Generate the static production build of the Angular app (the generated static assets will build straight into the Next.js public directory at `/public/angular`):
-```bash
-# Build the Angular app output
-cd angular-app
-npm run build
-cd ..
-```
-
-### 5. Running the Application
-Start the Next.js development server locally:
-```bash
-# Start development server
-npm run dev
-```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser to explore the dashboard.
+| Command | Action | Description |
+| :--- | :--- | :--- |
+| `npm install` | **Dependencies** | Installs backend and dev package components. |
+| `cd angular-app && npm install && cd ..` | **Frontend Setup** | Installs client-side frontend package dependencies. |
+| `npx prisma db push` | **Database Push** | Synchronizes SQLite database with current models. |
+| `npx tsx prisma/seed.ts` | **Seeding Records** | populates SQLite with mock sessions and verifications. |
+| `npm run build` | **Compiles Bundle** | Builds Angular and compiles the Next.js static output. |
+| `npm run dev` | **Local Execution** | Launches the Next.js localhost application on port `3000`. |
 
 ---
 
