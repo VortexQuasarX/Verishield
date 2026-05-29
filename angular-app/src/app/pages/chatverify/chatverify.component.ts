@@ -40,19 +40,14 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.sub.add(
       this.apiService.getChatVerifySessions().subscribe({
-        next: (response: any) => {
-          // API returns { success, data: { sessions, analytics } } or ChatVerifySession[]
-          const rawSessions = response?.data?.sessions || response?.data || response;
-          if (Array.isArray(rawSessions)) {
-            this.sessions = rawSessions.map((s: any) => ({
-              id: s.id,
-              candidateName: s.candidateName,
-              status: s.status || 'pending',
-              createdAt: s.createdAt || s.lastActivity,
-              lastMessage: s.messages?.[0]?.content || s.lastMessage || '',
-            }));
+        next: (sessions: any) => {
+          // API now returns ChatVerifySession[] directly
+          if (Array.isArray(sessions)) {
+            this.sessions = sessions;
           } else {
-            this.sessions = [];
+            // Fallback: unwrap if wrapped
+            const raw = sessions?.data?.sessions || sessions?.data || [];
+            this.sessions = Array.isArray(raw) ? raw : [];
           }
           this.loading = false;
           this.cdr.markForCheck();
@@ -150,15 +145,15 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
 
     this.sub.add(
       this.apiService.createChatVerifySession({ candidateName: this.newCandidateName }).subscribe({
-        next: (response: any) => {
-          // API returns { success, data: session } or ChatVerifySession
-          const newSession = response?.data || response;
-          if (newSession?.id) {
+        next: (newSession: any) => {
+          // API now returns ChatVerifySession directly
+          const session = newSession?.data || newSession;
+          if (session?.id) {
             this.sessions.unshift({
-              id: newSession.id,
-              candidateName: newSession.candidateName || this.newCandidateName,
-              status: newSession.status || 'active',
-              createdAt: newSession.createdAt || new Date().toISOString(),
+              id: session.id,
+              candidateName: session.candidateName || this.newCandidateName,
+              status: session.status || 'active',
+              createdAt: session.createdAt || new Date().toISOString(),
             });
           }
           this.creatingSession = false;

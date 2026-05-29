@@ -16,30 +16,15 @@ export async function GET(request: NextRequest) {
     orderBy: { lastActivity: 'desc' },
   });
 
-  // Analytics
-  const totalSessions = sessions.length;
-  const completedSessions = sessions.filter((s) => s.status === 'completed').length;
-  const droppedOff = sessions.filter((s) => s.status === 'dropped_off').length;
-  const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
-  const dropOffRate = totalSessions > 0 ? Math.round((droppedOff / totalSessions) * 100) : 0;
-  const docUploadRate = totalSessions > 0
-    ? Math.round((sessions.filter((s) => s.documentsUploaded && s.documentsUploaded.length > 0).length / totalSessions) * 100)
-    : 0;
-  const avgTimeToConsent = '2.4 hours';
+  const mapped = sessions.map((s) => ({
+    id: s.id,
+    candidateName: s.candidateName,
+    status: s.status,
+    createdAt: s.createdAt,
+    lastMessage: s.messages?.[0]?.content || '',
+  }));
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      sessions,
-      analytics: {
-        totalSessions,
-        completionRate,
-        avgTimeToConsent,
-        dropOffRate,
-        docUploadRate,
-      },
-    },
-  });
+  return NextResponse.json(mapped);
 }
 
 export async function POST(request: NextRequest) {
@@ -65,10 +50,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: session,
-    });
+    const mapped = {
+      id: session.id,
+      candidateName: session.candidateName,
+      status: session.status,
+      createdAt: session.createdAt,
+      lastMessage: '',
+    };
+
+    return NextResponse.json(mapped);
   } catch {
     return NextResponse.json(
       { success: false, message: 'Invalid request body' },

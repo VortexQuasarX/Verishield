@@ -10,7 +10,7 @@ import { fireWebhook } from '@/lib/webhook';
 import { hashPassword } from '@/lib/crypto';
 
 export async function GET(request: NextRequest) {
-  const auth = validateAuth(request);
+  const auth = requireAdmin(request);
   if (!auth.valid) return auth.error;
 
   try {

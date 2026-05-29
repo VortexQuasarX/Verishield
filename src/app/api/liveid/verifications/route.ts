@@ -6,31 +6,20 @@ export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
   if (!auth.valid) return auth.error;
 
-  const verifications = await db.liveIDRecord.findMany({
+  const records = await db.liveIDRecord.findMany({
     orderBy: { createdAt: 'desc' },
   });
 
-  // Stats
-  const totalToday = verifications.length;
-  const passed = verifications.filter((v) => v.status === 'verified').length;
-  const passRate = totalToday > 0 ? Math.round((passed / totalToday) * 100 * 10) / 10 : 0;
-  const spoofBlocked = verifications.filter(
-    (v) => v.status === 'mismatch' && (v.antiSpoofScore ?? 0) < 30
-  ).length;
-  const avgProcessingTime = '4.2s';
+  const verifications = records.map((r) => ({
+    id: r.id,
+    candidateName: r.candidateName,
+    matchScore: r.faceMatchScore || r.idMatchScore,
+    livenessScore: r.livenessScore,
+    status: r.status,
+    createdAt: r.createdAt,
+  }));
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      verifications,
-      stats: {
-        verificationsToday: totalToday + 142,
-        passRate,
-        spoofAttemptsBlocked: spoofBlocked + 23,
-        avgProcessingTime,
-      },
-    },
-  });
+  return NextResponse.json(verifications);
 }
 
 export async function POST(request: NextRequest) {
@@ -56,13 +45,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...record,
-        currentStep: 'photo_capture',
-      },
-    });
+    const verification = {
+      id: record.id,
+      candidateName: record.candidateName,
+      matchScore: record.faceMatchScore || record.idMatchScore,
+      livenessScore: record.livenessScore,
+      status: record.status,
+      createdAt: record.createdAt,
+    };
+
+    return NextResponse.json(verification);
   } catch {
     return NextResponse.json(
       { success: false, message: 'Invalid request body' },

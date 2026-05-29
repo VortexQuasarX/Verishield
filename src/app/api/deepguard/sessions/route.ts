@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateAuth } from '@/lib/auth-middleware';
 
+function mapToSession(check: {
+  id: string;
+  candidateName: string;
+  status: string;
+  createdAt: Date;
+  deepfakeScore: number | null;
+  confidenceScore: number;
+}) {
+  return {
+    id: check.id,
+    name: check.candidateName,
+    status: check.status,
+    createdAt: check.createdAt.toISOString(),
+    ...(check.deepfakeScore != null && { deepfakeScore: check.deepfakeScore }),
+    ...(check.confidenceScore > 0 && { confidence: check.confidenceScore }),
+  };
+}
+
 export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
   if (!auth.valid) return auth.error;
@@ -10,39 +28,9 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Stats
-  const identityMismatches = identityChecks.filter(
-    (l) => l.status === 'suspected_spoof' || l.status === 'failed'
-  ).length;
-  const fraudBlocks = identityChecks.filter(
-    (c) => (c.deepfakeScore ?? 0) > 50 && c.status === 'flagged'
-  ).length;
+  const sessions = identityChecks.map(mapToSession);
 
-  // Alert timeline
-  const alerts = identityChecks
-    .filter((c) => c.alerts)
-    .slice(0, 6)
-    .map((c, i) => ({
-      id: `alert_${i + 1}`,
-      severity: c.status === 'flagged' ? 'critical' : c.status === 'suspected_spoof' ? 'error' : 'success',
-      message: c.alerts!,
-      timestamp: c.createdAt.toISOString(),
-    }));
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      identityChecks,
-      stats: {
-        activeInterviews: identityChecks.filter((c) => c.status === 'pending').length,
-        threatsDetected: identityChecks.filter((c) => c.status === 'flagged').length,
-        fraudBlocks,
-        identityMismatches,
-      },
-      alerts,
-      threatLevel: fraudBlocks > 0 ? 'ELEVATED' : 'NORMAL',
-    },
-  });
+  return NextResponse.json(sessions);
 }
 
 export async function POST(request: NextRequest) {
@@ -51,11 +39,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { candidateName, verificationId } = body;
+    const candidateName = body.name ?? body.candidateName;
+    const { verificationId } = body;
 
     if (!candidateName) {
       return NextResponse.json(
-        { success: false, message: 'candidateName is required' },
+        { success: false, message: 'name is required' },
         { status: 400 }
       );
     }
@@ -68,10 +57,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: check,
-    });
+    return NextResponse.json(mapToSession(check));
   } catch {
     return NextResponse.json(
       { success: false, message: 'Invalid request body' },

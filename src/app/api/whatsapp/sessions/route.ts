@@ -1,62 +1,22 @@
-import { NextResponse } from 'next/server';
-import { generateWhatsAppSessions } from '@/lib/mock-data';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const sessions = generateWhatsAppSessions();
-
-  // Analytics
-  const totalSessions = sessions.length;
-  const completedSessions = sessions.filter((s) => s.status === 'completed').length;
-  const droppedOff = sessions.filter((s) => s.status === 'dropped_off').length;
-  const completionRate = Math.round((completedSessions / totalSessions) * 100);
-  const dropOffRate = Math.round((droppedOff / totalSessions) * 100);
-  const docUploadRate = Math.round(
-    (sessions.filter((s) => s.documentsUploaded.length > 0).length / totalSessions) * 100
-  );
-  const avgTimeToConsent = '2.4 hours';
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      sessions,
-      analytics: {
-        totalSessions,
-        completionRate,
-        avgTimeToConsent,
-        dropOffRate,
-        docUploadRate,
-      },
-    },
+// Legacy route - redirects to the DB-backed chatverify/sessions endpoint
+export async function GET(request: NextRequest) {
+  const baseUrl = new URL(request.url).origin;
+  const response = await fetch(`${baseUrl}/api/chatverify/sessions`, {
+    headers: request.headers,
   });
+  const data = await response.json();
+  return NextResponse.json(data);
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { sessionId, type, content } = body;
-
-    if (!sessionId || !type || !content) {
-      return NextResponse.json(
-        { success: false, message: 'sessionId, type, and content are required' },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        messageId: `msg_${Date.now()}`,
-        sessionId,
-        type,
-        content,
-        timestamp: new Date().toISOString(),
-        status: 'sent',
-      },
-    });
-  } catch {
-    return NextResponse.json(
-      { success: false, message: 'Invalid request body' },
-      { status: 400 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  const baseUrl = new URL(request.url).origin;
+  const response = await fetch(`${baseUrl}/api/chatverify/sessions`, {
+    method: 'POST',
+    headers: request.headers,
+    body: await request.text(),
+  });
+  const data = await response.json();
+  return NextResponse.json(data, { status: response.status });
 }

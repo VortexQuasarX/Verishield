@@ -1,7 +1,7 @@
 // =====================================================
 // VeriShield - Settings API
-// GET: Read all settings from DB as key-value object
-// PUT: Upsert settings into DB
+// GET: Read settings mapped to Angular SettingsData format
+// PUT: Accept SettingsData format, map back to key-value for storage
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,6 +21,30 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   auto_seal: 'true',
   retention_period: '365',
 };
+
+// Map flat DB key-value pairs → Angular SettingsData format
+function toSettingsData(flat: Record<string, string>) {
+  return {
+    defaultTurnaround: flat.default_turnaround ?? '7',
+    autoEscalation: flat.auto_escalation === 'true',
+    apiKey: flat.api_key ?? '',
+    webhookUrl: flat.webhook_url ?? '',
+    emailAlerts: flat.email_alerts === 'true',
+    autoSealRecords: flat.auto_seal === 'true',
+  };
+}
+
+// Map Angular SettingsData format → flat key-value pairs for DB storage
+function fromSettingsData(data: Record<string, unknown>): Record<string, string> {
+  return {
+    default_turnaround: String(data.defaultTurnaround ?? '7'),
+    auto_escalation: String(data.autoEscalation ?? false),
+    api_key: String(data.apiKey ?? ''),
+    webhook_url: String(data.webhookUrl ?? ''),
+    email_alerts: String(data.emailAlerts ?? false),
+    auto_seal: String(data.autoSealRecords ?? false),
+  };
+}
 
 export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
@@ -45,7 +69,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(result);
+    // Map flat key-value pairs to SettingsData format for Angular
+    const mapped = toSettingsData(result);
+    return NextResponse.json(mapped);
   } catch {
     // If DB fails, return defaults
     const result = { ...DEFAULT_SETTINGS };
@@ -53,7 +79,8 @@ export async function GET(request: NextRequest) {
       const random = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').substring(0, 8);
       result.api_key = `vsh_live_${random}`;
     }
-    return NextResponse.json(result);
+    const mapped = toSettingsData(result);
+    return NextResponse.json(mapped);
   }
 }
 
@@ -71,19 +98,22 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Map SettingsData (camelCase) back to flat key-value pairs for storage
+    const flatPairs = fromSettingsData(body);
+
     // Upsert each key-value pair sequentially to avoid SQLite lock issues
-    for (const [key, value] of Object.entries(body)) {
-      await upsertSetting(key, String(value));
+    for (const [key, value] of Object.entries(flatPairs)) {
+      await upsertSetting(key, value);
     }
 
-    // Return updated settings
+    // Return updated settings in SettingsData format
     const settings = await getAllSettings();
-    const result: Record<string, string> = {};
+    const result: Record<string, string> = { ...DEFAULT_SETTINGS };
     for (const s of settings) {
       result[s.key] = s.value;
     }
-
-    return NextResponse.json(result);
+    const mapped = toSettingsData(result);
+    return NextResponse.json(mapped);
   } catch (error) {
     console.error('Settings PUT error:', error);
     return NextResponse.json(

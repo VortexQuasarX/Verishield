@@ -2,39 +2,68 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateAuth } from '@/lib/auth-middleware';
 
+interface NexusTaskLog {
+  timestamp: string;
+  message: string;
+  level: string;
+}
+
+interface NexusTask {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  progress: number;
+  createdAt: Date;
+  completedAt?: Date;
+  logs: NexusTaskLog[];
+}
+
+function mapTask(record: {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  progress: number;
+  logs: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): NexusTask {
+  let parsedLogs: NexusTaskLog[] = [];
+  if (record.logs) {
+    try {
+      const decoded = JSON.parse(record.logs);
+      if (Array.isArray(decoded)) {
+        parsedLogs = decoded;
+      }
+    } catch {
+      parsedLogs = [];
+    }
+  }
+
+  return {
+    id: record.id,
+    name: record.name,
+    type: record.type,
+    status: record.status,
+    progress: record.progress,
+    createdAt: record.createdAt,
+    ...(record.status === 'completed' && { completedAt: record.updatedAt }),
+    logs: parsedLogs,
+  };
+}
+
 export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
   if (!auth.valid) return auth.error;
 
-  const tasks = await db.nexusTaskRecord.findMany({
+  const records = await db.nexusTaskRecord.findMany({
     orderBy: { createdAt: 'desc' },
   });
 
-  // Agent stats
-  const activeTasks = tasks.filter((t) => t.status === 'running').length;
-  const escalations = tasks.filter(
-    (t) => t.type === 'auto_escalation' && new Date(t.createdAt).toDateString() === new Date().toDateString()
-  ).length;
-  const messagesSent = tasks.filter(
-    (t) => t.type === 'candidate_communication' && new Date(t.createdAt).toDateString() === new Date().toDateString()
-  ).length;
+  const tasks: NexusTask[] = records.map(mapTask);
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      tasks,
-      stats: {
-        activeTasks,
-        slaPredictions: {
-          onTrack: tasks.filter((t) => t.status === 'completed').length,
-          atRisk: tasks.filter((t) => t.status === 'failed').length,
-        },
-        autoEscalations: escalations,
-        candidateMessages: messagesSent,
-      },
-      agentStatus: 'active',
-    },
-  });
+  return NextResponse.json(tasks);
 }
 
 export async function POST(request: NextRequest) {
@@ -52,7 +81,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const task = await db.nexusTaskRecord.create({
+    const record = await db.nexusTaskRecord.create({
       data: {
         name,
         type,
@@ -62,10 +91,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: task,
-    });
+    const task: NexusTask = mapTask(record);
+
+    return NextResponse.json(task);
   } catch {
     return NextResponse.json(
       { success: false, message: 'Invalid request body' },

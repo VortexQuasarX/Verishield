@@ -36,9 +36,13 @@ export async function GET(request: NextRequest) {
     if (fileStat.isFile()) {
       const content = await readFile(filePath);
       const contentType = getContentType(relativePath);
+      // JS/CSS with content hashes get long cache; others get short cache
+      const isHashedAsset = contentType === 'application/javascript' || contentType === 'text/css';
       const cacheControl = contentType === 'text/html'
-        ? 'no-cache'
-        : 'public, max-age=31536000, immutable';
+        ? 'no-cache, no-store, must-revalidate'
+        : isHashedAsset
+          ? 'public, max-age=3600, must-revalidate'  // 1 hour with revalidation (hashes change on rebuild)
+          : 'public, max-age=86400';  // 1 day for fonts/images
       return new NextResponse(content, {
         headers: {
           'Content-Type': contentType,
