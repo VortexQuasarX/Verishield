@@ -1,0 +1,206 @@
+<div class="animate-page forensidoc-page">
+  <!-- Page Header -->
+  <div class="page-header animate-fade-up">
+    <div class="header-content">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div>
+        <h1>ForensiDoc AI</h1>
+        <p class="header-subtitle">Advanced document forensics and tamper detection engine</p>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="product-dot"></span>
+      <span>Active</span>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Upload Area -->
+    <div class="card card-glass upload-card animate-fade-up stagger-1">
+      <div class="card-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <h3>Document Analysis</h3>
+      </div>
+
+      <!-- File Upload Drop Zone -->
+      <div
+        class="drop-zone"
+        [class.drag-over]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (click)="triggerFileInput()"
+      >
+        <input
+          type="file"
+          #fileInput
+          class="file-input-hidden"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.txt,.xls,.xlsx,.ppt,.pptx"
+          (change)="onFileSelected($event)"
+        />
+
+        <!-- No file selected state -->
+        <ng-container *ngIf="!selectedFile">
+          <div class="drop-zone-icon-wrap">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <span class="drop-zone-title">Drop your document here</span>
+          <span class="drop-zone-subtitle">or click to browse files</span>
+          <div class="drop-zone-types">
+            <span class="file-type-badge">PDF</span>
+            <span class="file-type-badge">DOCX</span>
+            <span class="file-type-badge">JPG</span>
+            <span class="file-type-badge">PNG</span>
+            <span class="file-type-badge">TXT</span>
+          </div>
+        </ng-container>
+
+        <!-- File selected state -->
+        <ng-container *ngIf="selectedFile">
+          <div class="file-preview">
+            <span class="file-preview-icon">{{ getFileTypeIcon(selectedFile.name) }}</span>
+            <div class="file-preview-info">
+              <span class="file-preview-name">{{ selectedFile.name }}</span>
+              <span class="file-preview-size">{{ formatFileSize(selectedFile.size) }}</span>
+            </div>
+            <button class="file-remove-btn" (click)="clearFile(); $event.stopPropagation()" title="Remove file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Scanning overlay -->
+        <div class="scan-overlay" *ngIf="isLoading">
+          <div class="scan-line"></div>
+          <div class="scan-text">Scanning document...</div>
+        </div>
+      </div>
+
+      <div class="upload-actions">
+        <button class="btn btn-primary w-full btn-lg" [disabled]="isLoading" (click)="uploadDocument()">
+          <span *ngIf="isLoading" class="spinner spinner-sm"></span>
+          <svg *ngIf="!isLoading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          {{ isLoading ? 'Analyzing...' : (selectedFile ? 'Upload & Analyze' : 'Quick Analyze (Demo)') }}
+        </button>
+        <button class="btn btn-secondary w-full" *ngIf="analysisComplete" (click)="resetAnalysis()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Analyze New Document
+        </button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-area">
+      <!-- Loading -->
+      <div class="card card-glass loading-card animate-fade-up stagger-2" *ngIf="isLoading">
+        <div class="loading-animation">
+          <div class="scan-ring-outer"></div>
+          <div class="scan-ring-inner"></div>
+          <div class="scan-pulse"></div>
+          <svg class="scan-doc-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="scan-label">Running forensic analysis on document...</span>
+          <div class="scan-progress-bar">
+            <div class="scan-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <ng-container *ngIf="analysisComplete && result">
+        <!-- Authenticity Score -->
+        <div class="card card-glass score-card animate-fade-scale stagger-2">
+          <div class="score-header">
+            <div class="score-header-left">
+              <h3>Authenticity Assessment</h3>
+              <span class="status-badge" [ngClass]="result.tamperDetected ? 'status-tampered' : 'status-authentic'">
+                <span class="status-dot"></span>
+                {{ result.tamperDetected ? 'Tamper Detected' : 'Authentic' }}
+              </span>
+            </div>
+          </div>
+          <div class="score-display">
+            <div class="auth-gauge" [style.--gauge-color]="getScoreColor(result.authenticityScore)">
+              <svg viewBox="0 0 140 140" class="gauge-svg">
+                <circle cx="70" cy="70" r="58" class="gauge-bg"/>
+                <circle cx="70" cy="70" r="58" class="gauge-fill"
+                  [style.stroke-dashoffset]="440 - (440 * result.authenticityScore / 100)"
+                  [style.stroke]="getScoreColor(result.authenticityScore)"/>
+              </svg>
+              <div class="gauge-center">
+                <span class="gauge-value" [style.color]="getScoreColor(result.authenticityScore)">{{ result.authenticityScore }}</span>
+                <span class="gauge-label">/ 100</span>
+              </div>
+            </div>
+            <div class="score-details">
+              <div class="score-detail-item">
+                <div class="detail-icon" [class.issue]="result.tamperDetected" [class.clean]="!result.tamperDetected">
+                  <svg *ngIf="!result.tamperDetected" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg *ngIf="result.tamperDetected" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+                <div>
+                  <span class="detail-label">Tamper Detection</span>
+                  <span class="detail-value" [style.color]="result.tamperDetected ? 'var(--accent-red)' : 'var(--accent-green)'">
+                    {{ result.tamperDetected ? 'Issues Found' : 'No Issues' }}
+                  </span>
+                </div>
+              </div>
+              <div class="score-detail-item">
+                <div class="detail-icon neutral">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div>
+                  <span class="detail-label">Analyzed</span>
+                  <span class="detail-value">{{ result.analyzedAt | date:'short' }}</span>
+                </div>
+              </div>
+              <div class="score-detail-item">
+                <div class="detail-icon neutral">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div>
+                  <span class="detail-label">Finding Count</span>
+                  <span class="detail-value">{{ result.findings.length }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Findings -->
+        <div class="card card-glass findings-card animate-fade-up stagger-3">
+          <div class="card-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <h3>Detailed Findings</h3>
+          </div>
+          <div class="findings-list">
+            <div class="finding-item" *ngFor="let finding of result.findings; let i = index" [ngClass]="getFindingClass(finding.severity)" [style.animation-delay]="(i * 60) + 'ms'">
+              <div class="finding-icon-wrap" [ngClass]="getFindingClass(finding.severity)">
+                <svg *ngIf="finding.severity === 'info'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg *ngIf="finding.severity === 'warning'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg *ngIf="finding.severity === 'error'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </div>
+              <div class="finding-content">
+                <span class="finding-type">{{ finding.type }}</span>
+                <p class="finding-desc">{{ finding.description }}</p>
+              </div>
+              <span class="severity-pill" [ngClass]="finding.severity === 'info' ? 'pill-green' : finding.severity === 'warning' ? 'pill-orange' : 'pill-red'">
+                {{ finding.severity }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Empty State -->
+      <div class="card card-glass empty-card animate-fade-up stagger-2" *ngIf="!isLoading && !analysisComplete">
+        <div class="empty-icon-wrap">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>Upload a Document</h3>
+        <p>Upload a document to start forensic analysis and tamper detection.</p>
+      </div>
+    </div>
+  </div>
+</div>

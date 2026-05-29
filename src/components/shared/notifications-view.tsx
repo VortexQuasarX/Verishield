@@ -78,7 +78,7 @@ export function NotificationsView() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+          <h1 className="text-2xl font-bold tracking-tight"><span className="text-gradient">Notifications</span></h1>
           <p className="text-muted-foreground text-sm mt-1">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
         </div>
         {unreadCount > 0 && (
@@ -92,7 +92,7 @@ export function NotificationsView() {
       <div className="space-y-2">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="border-border/50">
+            <Card key={i} className="border-border/50 skeleton-shimmer">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
@@ -106,7 +106,7 @@ export function NotificationsView() {
             </Card>
           ))
         ) : notifications.length === 0 ? (
-          <Card className="border-border/50">
+          <Card className="border-border/50 card-premium shadow-luxury">
             <CardContent className="p-12 text-center">
               <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm font-medium">No notifications</p>
@@ -125,7 +125,7 @@ export function NotificationsView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card className={`border-border/50 transition-all ${!notification.isRead ? 'border-primary/20 bg-primary/[0.02]' : ''}`}>
+                <Card className={`border-border/50 card-premium shadow-luxury transition-all ${!notification.isRead ? 'border-primary/20 bg-primary/[0.02] gradient-border' : ''}`}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
@@ -141,7 +141,7 @@ export function NotificationsView() {
                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{notification.message}</p>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-xs text-muted-foreground">{formatTimeAgo(notification.createdAt)}</span>
-                          <Badge variant="outline" className="text-[9px] capitalize">{notification.type}</Badge>
+                          <Badge variant="outline" className="text-[9px] capitalize bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">{notification.type}</Badge>
                           {!notification.isRead && (
                             <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => handleMarkRead(notification.id)}>
                               <Check className="w-3 h-3 mr-1" />

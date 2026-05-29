@@ -1,20 +1,21 @@
 // =====================================================
-// MPloyChek - Activity Logs API
+// VeriShield - Activity Logs API
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generateActivityLogs } from '@/lib/mock-data';
-
-const logs = generateActivityLogs(40);
+import { db } from '@/lib/db';
+import { validateAuth } from '@/lib/auth-middleware';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const delay = parseInt(searchParams.get('delay') || '0');
-  const limit = parseInt(searchParams.get('limit') || '20');
+  const auth = validateAuth(request);
+  if (!auth.valid) return auth.error;
 
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
+  const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20');
 
-  return NextResponse.json(logs.slice(0, limit));
+  const activities = await db.activityLog.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  });
+
+  return NextResponse.json(activities);
 }

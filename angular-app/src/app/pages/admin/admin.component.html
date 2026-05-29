@@ -1,0 +1,368 @@
+<div class="animate-page admin-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Administration</h1>
+      <p class="header-subtitle">
+        Manage users, settings, and view system activity
+      </p>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="setTab('users')">
+      &#128101; Users
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'settings'" (click)="setTab('settings')">
+      &#9881; Settings
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'activity'" (click)="setTab('activity')">
+      &#128200; Activity
+    </button>
+  </div>
+
+  <!-- ========= USERS TAB ========= -->
+  <ng-container *ngIf="activeTab === 'users'">
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="card summary-card">
+        <div class="summary-icon teal">&#128101;</div>
+        <div class="summary-info">
+          <span class="summary-value">{{ users.length }}</span>
+          <span class="summary-label">Total Users</span>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-icon green">&#10003;</div>
+        <div class="summary-info">
+          <span class="summary-value">{{ activeUsersCount }}</span>
+          <span class="summary-label">Active</span>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-icon gold">&#9733;</div>
+        <div class="summary-info">
+          <span class="summary-value">{{ adminCount }}</span>
+          <span class="summary-label">Admins</span>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="summary-icon red">&#10005;</div>
+        <div class="summary-info">
+          <span class="summary-value">{{ users.length - activeUsersCount }}</span>
+          <span class="summary-label">Inactive</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card search-card">
+      <div class="search-wrapper">
+        <span class="search-icon">&#128270;</span>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Search users by name, email, or role..."
+          [(ngModel)]="searchQuery"
+          (keyup)="onSearch()"
+        />
+      </div>
+      <button class="btn btn-primary btn-sm" (click)="openCreateModal()">&#43; Add User</button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container" *ngIf="!loading; else tableSkeleton">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar" [class.admin-avatar]="user.role === 'admin'">
+                  {{ getInitials(user.name) }}
+                </div>
+                <span class="user-name">{{ user.name }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="email-text">{{ user.email }}</span>
+            </td>
+            <td>
+              <span [ngClass]="getRoleBadgeClass(user.role)">{{ user.role }}</span>
+            </td>
+            <td>
+              <span [ngClass]="getStatusBadgeClass(user.isActive)">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <span class="date-text">{{ formatDate(user.lastLogin) }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-ghost btn-sm" (click)="openEditModal(user)" title="Edit user">
+                  &#9998;
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="toggleUserStatus(user)"
+                  [title]="user.isActive ? 'Deactivate user' : 'Activate user'"
+                >
+                  {{ user.isActive ? '&#9724;' : '&#9744;' }}
+                </button>
+                <button class="btn btn-ghost btn-sm danger" (click)="openDeleteModal(user)" title="Delete user">
+                  &#128465;
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredUsers.length === 0">
+        <span class="empty-icon">&#128101;</span>
+        <h3>No users found</h3>
+        <p>{{ searchQuery ? 'Try adjusting your search query.' : 'Add your first user to get started.' }}</p>
+      </div>
+    </div>
+
+    <ng-template #tableSkeleton>
+      <div class="table-container">
+        <div class="skeleton-list" style="padding: 1rem;">
+          <div class="skeleton" style="height: 40px; margin-bottom: 8px;"></div>
+          <div class="skeleton" style="height: 56px; margin-bottom: 4px;" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- ========= SETTINGS TAB ========= -->
+  <ng-container *ngIf="activeTab === 'settings'">
+    <div class="card settings-card" *ngIf="!settingsLoading; else settingsSkeleton">
+      <h3>System Settings</h3>
+      <div class="settings-form">
+        <div class="form-group">
+          <label class="form-label" for="turnaround">Default Turnaround</label>
+          <select id="turnaround" class="form-select" [(ngModel)]="settings.defaultTurnaround">
+            <option value="3 hours">3 hours</option>
+            <option value="6 hours">6 hours</option>
+            <option value="12 hours">12 hours</option>
+            <option value="24 hours">24 hours</option>
+            <option value="48 hours">48 hours</option>
+          </select>
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-info">
+            <span class="setting-name">Auto-Escalation</span>
+            <span class="setting-desc">Automatically escalate cases exceeding SLA threshold</span>
+          </div>
+          <button class="toggle-btn" [class.active]="settings.autoEscalation" (click)="settings.autoEscalation = !settings.autoEscalation">
+            <span class="toggle-dot"></span>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="apiKey">API Key</label>
+          <input id="apiKey" type="password" class="form-input" [(ngModel)]="settings.apiKey" placeholder="Enter API key" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="webhook">Webhook URL</label>
+          <input id="webhook" type="url" class="form-input" [(ngModel)]="settings.webhookUrl" placeholder="https://your-webhook-url.com/api" />
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-info">
+            <span class="setting-name">Email Alerts</span>
+            <span class="setting-desc">Send email notifications for important events</span>
+          </div>
+          <button class="toggle-btn" [class.active]="settings.emailAlerts" (click)="settings.emailAlerts = !settings.emailAlerts">
+            <span class="toggle-dot"></span>
+          </button>
+        </div>
+
+        <div class="setting-toggle-row">
+          <div class="setting-info">
+            <span class="setting-name">Auto-Seal Records</span>
+            <span class="setting-desc">Automatically seal completed records on blockchain</span>
+          </div>
+          <button class="toggle-btn" [class.active]="settings.autoSealRecords" (click)="settings.autoSealRecords = !settings.autoSealRecords">
+            <span class="toggle-dot"></span>
+          </button>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn btn-primary" (click)="saveSettings()" [disabled]="settingsSaving">
+            <span *ngIf="settingsSaving" class="spinner spinner-sm"></span>
+            {{ settingsSaving ? 'Saving...' : 'Save Settings' }}
+          </button>
+          <span class="save-indicator" *ngIf="settingsSaved">&#10003; Saved</span>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #settingsSkeleton>
+      <div class="card">
+        <div class="skeleton" style="height: 24px; width: 30%; margin-bottom: 20px;"></div>
+        <div class="skeleton" style="height: 40px; margin-bottom: 16px;" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- ========= ACTIVITY TAB ========= -->
+  <ng-container *ngIf="activeTab === 'activity'">
+    <div class="card activity-tab-card" *ngIf="!activitiesLoading; else activitySkeleton">
+      <h3>Activity Log</h3>
+      <div class="activity-log-list">
+        <div class="activity-log-item" *ngFor="let act of activities">
+          <div class="act-icon" [style.background]="getActivityColor(act.category) + '16'" [style.color]="getActivityColor(act.category)">
+            {{ getActivityIcon(act.category) }}
+          </div>
+          <div class="act-content">
+            <div class="act-top">
+              <span class="act-action">{{ act.action }}</span>
+              <span class="act-time">{{ formatDateTime(act.timestamp) }}</span>
+            </div>
+            <span class="act-user">by {{ act.user }}</span>
+            <span class="act-details">{{ act.details }}</span>
+          </div>
+          <span class="badge" [ngClass]="'badge-' + act.category">{{ act.category }}</span>
+        </div>
+        <div class="empty-state" *ngIf="activities.length === 0">
+          <p>No activity recorded</p>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #activitySkeleton>
+      <div class="card">
+        <div class="skeleton" style="height: 24px; width: 30%; margin-bottom: 20px;"></div>
+        <div class="skeleton" style="height: 56px; margin-bottom: 8px;" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New User</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeCreateModal()">&#10005;</button>
+      </div>
+      <form (ngSubmit)="submitCreateUser()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label" for="newName">Full Name</label>
+          <input id="newName" type="text" class="form-input" [(ngModel)]="newUser.name" name="newName" placeholder="Enter full name" [disabled]="creatingUser" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newEmail">Email Address</label>
+          <input id="newEmail" type="email" class="form-input" [(ngModel)]="newUser.email" name="newEmail" placeholder="user@company.com" [disabled]="creatingUser" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newPassword">Password</label>
+          <input id="newPassword" type="password" class="form-input" [(ngModel)]="newUser.password" name="newPassword" placeholder="Minimum 6 characters" [disabled]="creatingUser" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newRole">Role</label>
+          <select id="newRole" class="form-select" [(ngModel)]="newUser.role" name="newRole" [disabled]="creatingUser">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="error-message" *ngIf="createError">{{ createError }}</div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="creatingUser">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="creatingUser">
+            <span *ngIf="creatingUser" class="spinner spinner-sm"></span>
+            {{ creatingUser ? 'Creating...' : 'Create User' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Edit User</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeEditModal()">&#10005;</button>
+      </div>
+      <form (ngSubmit)="submitEditUser()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label" for="editName">Full Name</label>
+          <input id="editName" type="text" class="form-input" [(ngModel)]="editForm.name" name="editName" [disabled]="savingUser" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editEmail">Email Address</label>
+          <input id="editEmail" type="email" class="form-input" [(ngModel)]="editForm.email" name="editEmail" [disabled]="savingUser" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editRole">Role</label>
+          <select id="editRole" class="form-select" [(ngModel)]="editForm.role" name="editRole" [disabled]="savingUser">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Status</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn" [class.active]="editForm.isActive" (click)="editForm.isActive = !editForm.isActive">
+              <span class="toggle-dot"></span>
+            </button>
+            <span class="toggle-label">{{ editForm.isActive ? 'Active' : 'Inactive' }}</span>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="editError">{{ editError }}</div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()" [disabled]="savingUser">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="savingUser">
+            <span *ngIf="savingUser" class="spinner spinner-sm"></span>
+            {{ savingUser ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Confirm Deletion</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeDeleteModal()">&#10005;</button>
+      </div>
+      <div class="delete-content">
+        <div class="delete-warning">
+          <span class="warning-icon">&#9888;</span>
+          <p>Are you sure you want to delete <strong>{{ deletingUser?.name }}</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="deletingInProgress">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deletingInProgress">
+            <span *ngIf="deletingInProgress" class="spinner spinner-sm"></span>
+            {{ deletingInProgress ? 'Deleting...' : 'Delete User' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class.success]="toastType === 'success'" [class.error]="toastType === 'error'">
+    <span class="toast-icon">{{ toastType === 'success' ? '&#10003;' : '&#9888;' }}</span>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

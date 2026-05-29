@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Route transition wrapper */
+.route-wrapper {
+  min-height: 100vh;
+  animation: pageEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

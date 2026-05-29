@@ -1,15 +1,18 @@
 // =====================================================
-// MPloyChek - Users API (GET all, POST create)
+// VeriShield - Users API (GET all, POST create)
 // Admin-only user management endpoints
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generateMockUsers } from '@/lib/mock-data';
-import type { AuthUser } from '@/types';
-
-let mockUsers: AuthUser[] = generateMockUsers();
+import { validateAuth, requireAdmin } from '@/lib/auth-middleware';
+import { getUsers, addUser, findUserByEmail } from '@/lib/user-store';
+import { fireWebhook } from '@/lib/webhook';
+import { hashPassword } from '@/lib/crypto';
 
 export async function GET(request: NextRequest) {
+  const auth = validateAuth(request);
+  if (!auth.valid) return auth.error;
+
   try {
     const { searchParams } = request.nextUrl;
     const delay = parseInt(searchParams.get('delay') || '0');
@@ -19,7 +22,7 @@ export async function GET(request: NextRequest) {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    let users = [...mockUsers];
+    let users = await getUsers();
 
     if (search) {
       const q = search.toLowerCase();
@@ -40,6 +43,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = requireAdmin(request);
+  if (!auth.valid) return auth.error;
+
   try {
     const body = await request.json();
     const { email, name, password, role } = body;
@@ -51,24 +57,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (mockUsers.find(u => u.email === email)) {
+    const existing = await findUserByEmail(email);
+    if (existing) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 409 }
       );
     }
 
-    const newUser: AuthUser = {
-      id: `usr_${Date.now()}`,
-      email,
-      name,
-      role: role || 'user',
-      isActive: true,
-      lastLogin: undefined,
-      avatar: undefined,
-    };
+    const hashedPassword = await hashPassword(password);
+    const newUser = await addUser({ email, name, password: hashedPassword, role });
 
-    mockUsers = [newUser, ...mockUsers];
+    // Fire webhook asynchronously (don't block the response)
+    fireWebhook('user.created', {
+      userId: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    }).catch(() => {
+      // Silently ignore webhook failures
+    });
 
     return NextResponse.json(newUser, { status: 201 });
   } catch {

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VeriShield — Employee Background Verification Platform</title>
+    <base href="/angular/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VeriShield Pro — Enterprise-grade employee background verification with AI-powered risk analysis, blockchain-verified records, and real-time compliance tracking." />
+    <meta name="theme-color" content="#0a0a0f" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      /* Critical loading screen - renders instantly */
+      .app-loader {
+        position: fixed;
+        inset: 0;
+        background: #0a0a0f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+      .app-loader.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .loader-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      .loader-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0d9488, #0f766e);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: loaderPulse 2s ease-in-out infinite;
+      }
+      .loader-diamond {
+        width: 24px;
+        height: 24px;
+        color: white;
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+      .loader-text {
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        letter-spacing: -0.03em;
+      }
+      .loader-bar {
+        width: 120px;
+        height: 3px;
+        background: #16161f;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .loader-bar-fill {
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(90deg, #0d9488, #14b8a6);
+        border-radius: 2px;
+        animation: loaderSlide 1.2s ease-in-out infinite;
+      }
+      @keyframes loaderPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      @keyframes loaderSlide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(350%); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Instant loading screen -->
+    <div class="app-loader" id="appLoader">
+      <div class="loader-brand">
+        <div class="loader-logo">
+          <span class="loader-diamond">&#9670;</span>
+        </div>
+        <span class="loader-text">VeriShield</span>
+        <div class="loader-bar">
+          <div class="loader-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+    <app-root></app-root>
+    <script>
+      // Hide loader once Angular bootstraps
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var loader = document.getElementById('appLoader');
+          if (loader) {
+            loader.classList.add('hidden');
+            setTimeout(function() { loader.remove(); }, 500);
+          }
+        }, 300);
+      });
+    </script>
+  </body>
+</html>

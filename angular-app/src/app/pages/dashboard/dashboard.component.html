@@ -1,0 +1,410 @@
+<div class="dashboard-page animate-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="greeting-row">
+        <span class="greeting-icon">{{ greetingIcon }}</span>
+        <h1 class="animate-fade-up">{{ greeting }}</h1>
+      </div>
+      <p class="header-subtitle animate-fade-up stagger-1">Verification overview and analytics</p>
+    </div>
+    <div class="header-right animate-fade-up stagger-2">
+      <button class="theme-toggle-btn" (click)="toggleTheme()" title="Toggle theme">
+        <span [innerHTML]="isDark ? '&#9728;' : '&#9790;'"></span>
+      </button>
+      <!-- API Latency Simulator -->
+      <div class="delay-simulator">
+        <span class="delay-label" [class.active]="activeRequests > 0">
+          <span class="delay-dot" *ngIf="activeRequests > 0"></span>
+          <span class="delay-counter" *ngIf="activeRequests > 0">{{ activeRequests }}</span>
+          {{ activeRequests > 0 ? 'Fetching...' : (apiDelay > 0 ? apiDelay + 'ms delay' : 'Live') }}
+        </span>
+        <div class="delay-buttons">
+          <button
+            *ngFor="let opt of delayOptions"
+            class="delay-btn"
+            [class.active]="apiDelay === opt"
+            (click)="setDelay(opt)"
+          >
+            {{ getDelayLabel(opt) }}
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" (click)="loadStats(); loadTrends(); loadActivities()">
+        &#8635; Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="goToRecords()">
+        &#43; New Verification
+      </button>
+    </div>
+  </div>
+
+  <!-- User Profile Card -->
+  <div class="user-profile-card card animate-fade-up stagger-2" *ngIf="currentUser">
+    <div class="profile-main">
+      <div class="profile-avatar" [class.admin]="isAdmin">
+        <span class="avatar-initials">{{ userInitials }}</span>
+        <div class="avatar-ring"></div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name-row">
+          <h3 class="profile-name">{{ currentUser.name }}</h3>
+          <span class="profile-role-badge" [class.admin]="isAdmin" [class.user]="!isAdmin">
+            {{ isAdmin ? '&#9813; Admin' : '&#9679; User' }}
+          </span>
+        </div>
+        <span class="profile-email">{{ currentUser.email }}</span>
+      </div>
+    </div>
+    <div class="profile-meta">
+      <div class="meta-item">
+        <span class="meta-icon clock">&#128337;</span>
+        <div class="meta-text">
+          <span class="meta-label">Last Login</span>
+          <span class="meta-value">{{ lastLoginFormatted }}</span>
+        </div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <span class="meta-icon status-active">&#10003;</span>
+        <div class="meta-text">
+          <span class="meta-label">Status</span>
+          <span class="meta-value status-active">Active</span>
+        </div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <span class="meta-icon role">&#128100;</span>
+        <div class="meta-text">
+          <span class="meta-label">Role</span>
+          <span class="meta-value">{{ userRole }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline Visualization -->
+  <div class="card pipeline-card animate-fade-up stagger-3" *ngIf="pipelineData.length > 0">
+    <div class="card-header">
+      <h3>&#9881; Verification Pipeline</h3>
+      <span class="card-subtitle">{{ pipelineData.length }} stages</span>
+    </div>
+    <div class="pipeline-stages">
+      <div class="pipeline-stage" *ngFor="let stage of pipelineData; let i = index">
+        <div class="stage-visual">
+          <div class="stage-circle-wrap">
+            <div class="stage-dot" [style.--stage-color]="getPipelineColor(i)">
+              <span class="stage-count">{{ stage.count }}</span>
+            </div>
+            <svg class="stage-pulse" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+            </svg>
+          </div>
+          <span class="stage-name">{{ stage.name }}</span>
+          <div class="stage-pct-bar">
+            <div class="stage-pct-fill" [style.width.%]="stage.percentage" [style.--stage-color]="getPipelineColor(i)"></div>
+          </div>
+          <span class="stage-pct-text">{{ stage.percentage }}%</span>
+        </div>
+        <div class="stage-connector" *ngIf="i < pipelineData.length - 1">
+          <div class="connector-gradient" [style.--from-color]="getPipelineColor(i)" [style.--to-color]="getPipelineColor(i + 1)">
+            <div class="connector-line"></div>
+            <div class="connector-flow"></div>
+          </div>
+          <span class="connector-arrow">&#8250;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <!-- Loading Skeletons -->
+    <ng-container *ngIf="loading; else statsContent">
+      <div class="stat-card card animate-fade-up stagger-1" *ngFor="let s of [1,2,3,4]">
+        <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: 12px;"></div>
+        <div class="skeleton" style="height: 32px; width: 40%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 14px; width: 50%;"></div>
+      </div>
+    </ng-container>
+
+    <ng-template #statsContent>
+      <!-- Total Verifications -->
+      <div class="stat-card card stat-teal animate-fade-up stagger-1">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Total Verifications</span>
+          <span class="stat-icon teal">&#128202;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.totalVerifications ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend positive">&#8593; 12.5%</span>
+          <span class="stat-period">vs last month</span>
+        </div>
+      </div>
+
+      <!-- Pending Cases -->
+      <div class="stat-card card stat-orange animate-fade-up stagger-2">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Pending Cases</span>
+          <span class="stat-icon orange">&#9203;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.pendingCases ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend" [class]="(stats?.pendingCases ?? 0) > 10 ? 'negative' : 'positive'">
+            {{ (stats?.pendingCases ?? 0) > 10 ? '&#8593; High' : '&#8595; Low' }}
+          </span>
+          <span class="stat-period">awaiting review</span>
+        </div>
+      </div>
+
+      <!-- Completed Checks -->
+      <div class="stat-card card stat-green animate-fade-up stagger-3">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Completed Checks</span>
+          <span class="stat-icon green">&#10003;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.completedChecks ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend positive">&#8593; 8.3%</span>
+          <span class="stat-period">this month</span>
+        </div>
+      </div>
+
+      <!-- High Risk Flags -->
+      <div class="stat-card card stat-red animate-fade-up stagger-4">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">High Risk Flags</span>
+          <span class="stat-icon red">&#9888;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.highRiskFlags ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend negative">&#8593; Attention</span>
+          <span class="stat-period">require review</span>
+        </div>
+      </div>
+
+      <!-- Success Rate -->
+      <div class="stat-card card stat-gold animate-fade-up stagger-5">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Success Rate</span>
+          <span class="stat-icon gold">&#9733;</span>
+        </div>
+        <div class="stat-value animate-count" [style.color]="getSuccessRateColor(stats?.successRate ?? 0)">
+          {{ stats?.successRate ?? 0 }}%
+        </div>
+        <div class="stat-footer">
+          <div class="mini-progress">
+            <div class="progress-bar">
+              <div class="progress-fill gold-fill" [style.width.%]="stats?.successRate ?? 0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avg Processing Time -->
+      <div class="stat-card card stat-teal animate-fade-up stagger-6">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Avg Processing</span>
+          <span class="stat-icon teal">&#9201;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.avgProcessingTime ?? '0 days' }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend positive">&#8595; Faster</span>
+          <span class="stat-period">turnaround time</span>
+        </div>
+      </div>
+
+      <!-- Chain Verifications -->
+      <div class="stat-card card stat-purple animate-fade-up stagger-7">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">Chain Sealed</span>
+          <span class="stat-icon purple">&#128274;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.chainVerifications ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend positive">&#10003; Verified</span>
+          <span class="stat-period">on chain</span>
+        </div>
+      </div>
+
+      <!-- AI Processed -->
+      <div class="stat-card card stat-blue animate-fade-up stagger-8">
+        <div class="stat-glow"></div>
+        <div class="stat-header">
+          <span class="stat-label">AI Processed</span>
+          <span class="stat-icon blue">&#129302;</span>
+        </div>
+        <div class="stat-value animate-count">{{ stats?.aiProcessedChecks ?? 0 | number }}</div>
+        <div class="stat-footer">
+          <span class="stat-trend positive">&#8593; Automated</span>
+          <span class="stat-period">by CredScan AI</span>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Middle Row: Trends + AI Insights -->
+  <div class="middle-grid">
+    <!-- Trends Chart -->
+    <div class="card trends-card animate-fade-up stagger-4">
+      <div class="card-header">
+        <h3>&#128200; Verification Trends</h3>
+        <span class="card-subtitle">Monthly overview</span>
+      </div>
+      <div class="trends-chart" *ngIf="!trendsLoading; else trendsSkeleton">
+        <div class="chart-container">
+          <div class="chart-bars" *ngIf="getVisibleTrends().length > 0; else noTrends">
+            <div class="chart-group" *ngFor="let trend of getVisibleTrends(); let i = index">
+              <div class="bars">
+                <div class="bar bar-completed"
+                  [style.height]="getBarHeight(trend.completed)"
+                  [style.animation-delay]="i * 60 + 'ms'"
+                  title="Completed: {{trend.completed}}">
+                  <div class="bar-tooltip">
+                    <span class="tooltip-label">Completed</span>
+                    <span class="tooltip-value">{{ trend.completed }}</span>
+                  </div>
+                </div>
+                <div class="bar bar-pending"
+                  [style.height]="getBarHeight(trend.pending)"
+                  [style.animation-delay]="(i * 60 + 30) + 'ms'"
+                  title="Pending: {{trend.pending}}">
+                  <div class="bar-tooltip">
+                    <span class="tooltip-label">Pending</span>
+                    <span class="tooltip-value">{{ trend.pending }}</span>
+                  </div>
+                </div>
+                <div class="bar bar-flagged"
+                  [style.height]="getBarHeight(trend.flagged)"
+                  [style.animation-delay]="(i * 60 + 60) + 'ms'"
+                  title="Flagged: {{trend.flagged}}">
+                  <div class="bar-tooltip">
+                    <span class="tooltip-label">Flagged</span>
+                    <span class="tooltip-value">{{ trend.flagged }}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="chart-label">{{ trend.month }}</span>
+            </div>
+          </div>
+          <ng-template #noTrends>
+            <div class="no-data">No trend data available</div>
+          </ng-template>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot completed"></span> Completed</span>
+          <span class="legend-item"><span class="legend-dot pending"></span> Pending</span>
+          <span class="legend-item"><span class="legend-dot flagged"></span> Flagged</span>
+        </div>
+      </div>
+      <ng-template #trendsSkeleton>
+        <div class="skeleton-chart">
+          <div class="skeleton" style="height: 180px; width: 100%;"></div>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- AI Insights + Quick Actions -->
+    <div class="side-cards">
+      <div class="card insights-card animate-fade-up stagger-5">
+        <div class="card-header">
+          <h3>&#129302; AI Insights</h3>
+          <span class="card-subtitle">{{ aiInsights.length }} active</span>
+        </div>
+        <div class="insights-list">
+          <div class="insight-item" *ngFor="let insight of aiInsights" [ngClass]="getInsightClass(insight.type)">
+            <div class="insight-icon-wrap" [ngClass]="getInsightClass(insight.type)">
+              <span class="insight-icon">{{ getInsightIcon(insight.type) }}</span>
+            </div>
+            <div class="insight-content">
+              <span class="insight-title">{{ insight.title }}</span>
+              <p class="insight-desc">{{ insight.description }}</p>
+              <div class="insight-confidence-bar">
+                <div class="confidence-track">
+                  <div class="confidence-fill" [style.width.%]="insight.confidence" [ngClass]="getInsightClass(insight.type)"></div>
+                </div>
+                <span class="confidence-pct">{{ insight.confidence }}%</span>
+              </div>
+            </div>
+          </div>
+          <div class="no-data" *ngIf="aiInsights.length === 0">No insights available</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card quick-card animate-fade-up stagger-6">
+        <div class="card-header">
+          <h3>&#9889; Quick Actions</h3>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-btn" (click)="goToRecords()">
+            <span class="quick-icon teal">&#128270;</span>
+            <div class="quick-text">
+              <span class="quick-label">View Records</span>
+              <span class="quick-desc">Browse all verifications</span>
+            </div>
+            <span class="quick-arrow">&#8250;</span>
+          </button>
+          <button class="quick-btn" (click)="loadStats(); loadTrends(); loadActivities()">
+            <span class="quick-icon orange">&#8635;</span>
+            <div class="quick-text">
+              <span class="quick-label">Refresh Data</span>
+              <span class="quick-desc">Sync latest statistics</span>
+            </div>
+            <span class="quick-arrow">&#8250;</span>
+          </button>
+          <button class="quick-btn" (click)="goToRecords()">
+            <span class="quick-icon green">&#43;</span>
+            <div class="quick-text">
+              <span class="quick-label">New Check</span>
+              <span class="quick-desc">Start verification</span>
+            </div>
+            <span class="quick-arrow">&#8250;</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="card activity-card animate-fade-up stagger-6">
+    <div class="card-header">
+      <h3>&#128336; Recent Activity</h3>
+      <span class="card-subtitle">{{ activities.length }} recent events</span>
+    </div>
+    <div class="activity-list" *ngIf="!activitiesLoading; else activitySkeleton">
+      <div class="activity-item" *ngFor="let activity of activities; let i = index" class="animate-fade-up" [style.animation-delay]="i * 30 + 'ms'">
+        <div class="activity-timeline-dot" [style.background]="getCategoryColor(activity.category)">
+          <span class="timeline-inner"></span>
+        </div>
+        <div class="activity-timeline-line" *ngIf="i < activities.length - 1"></div>
+        <div class="activity-icon" [style.background]="getCategoryColor(activity.category) + '15'" [style.color]="getCategoryColor(activity.category)">
+          <span>{{ getCategoryIcon(activity.category) }}</span>
+        </div>
+        <div class="activity-content">
+          <div class="activity-top">
+            <span class="activity-user">{{ activity.userName }}</span>
+            <span class="activity-time">{{ getTimeAgo(activity.createdAt) }}</span>
+          </div>
+          <span class="activity-action">{{ activity.action }}</span>
+        </div>
+        <span class="activity-category badge" [ngClass]="'badge-' + activity.category">
+          {{ activity.category }}
+        </span>
+      </div>
+      <div class="no-data" *ngIf="activities.length === 0">No recent activity</div>
+    </div>
+    <ng-template #activitySkeleton>
+      <div class="skeleton-list">
+        <div class="skeleton" style="height: 48px; margin-bottom: 8px;" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </ng-template>
+  </div>
+</div>

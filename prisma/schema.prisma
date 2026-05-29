@@ -32,6 +32,7 @@ model VerificationRecord {
   completionEta    DateTime?
   assigneeId       String?
   notes            String?
+  chainHash        String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -54,4 +55,80 @@ model Notification {
   type      String   @default("info")
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatSession {
+  id              String   @id @default(cuid())
+  candidateName   String
+  candidatePhone  String?
+  verificationId  String?
+  status          String   @default("active")
+  consentGiven    Boolean  @default(false)
+  documentsUploaded String?
+  lastActivity    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  messages        ChatMessage[]
+}
+
+model ChatMessage {
+  id              String   @id @default(cuid())
+  sessionId       String
+  type            String   @default("text")
+  content         String
+  isFromCandidate Boolean  @default(false)
+  status          String   @default("sent")
+  createdAt       DateTime @default(now())
+  session         ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model DeepGuardCheck {
+  id              String   @id @default(cuid())
+  candidateName   String
+  verificationId  String?
+  status          String   @default("pending")
+  challengeType   String?
+  confidenceScore Float    @default(0)
+  faceMatchScore  Float    @default(0)
+  identityVerified Boolean @default(false)
+  alerts          String?
+  deepfakeScore   Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LiveIDRecord {
+  id              String   @id @default(cuid())
+  candidateName   String
+  idNumber        String?
+  status          String   @default("pending")
+  checkPassed     Boolean  @default(false)
+  faceMatchScore  Float    @default(0)
+  idMatchScore    Float    @default(0)
+  livenessScore   Float    @default(0)
+  antiSpoofScore  Float?
+  photoCaptured   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NexusTaskRecord {
+  id              String   @id @default(cuid())
+  name            String
+  type            String
+  status          String   @default("pending")
+  progress        Int      @default(0)
+  candidateName   String?
+  verificationId  String?
+  logs            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

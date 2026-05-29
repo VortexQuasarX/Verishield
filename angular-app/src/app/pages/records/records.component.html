@@ -1,0 +1,416 @@
+<div class="animate-page records-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-title-row">
+        <h1>Verification Records</h1>
+        <span class="access-badge" [class.full]="accessLevel === 'full'" [class.limited]="accessLevel === 'limited'">
+          <span class="access-dot"></span>
+          {{ accessLevel === 'full' ? 'Full Access' : 'Limited' }}
+        </span>
+      </div>
+      <p class="header-subtitle">{{ totalRecords | number }} total records</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-secondary btn-sm" (click)="loadRecords()">
+        &#8635; Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+        &#43; New Verification
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar card">
+    <div class="filters-row">
+      <div class="search-wrapper">
+        <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Search by name, company, ID..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+        />
+        <button class="search-clear" *ngIf="searchQuery" (click)="searchQuery = ''; onSearch()">&#10005;</button>
+      </div>
+      <div class="filter-group">
+        <div class="filter-wrap">
+          <select class="form-select filter-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+            <option value="flagged">Flagged</option>
+          </select>
+        </div>
+        <div class="filter-wrap">
+          <select class="form-select filter-select" [(ngModel)]="riskFilter" (change)="onFilterChange()">
+            <option value="">All Risk Levels</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div class="filter-wrap">
+          <select class="form-select filter-select" [(ngModel)]="typeFilter" (change)="onFilterChange()">
+            <option value="">All Types</option>
+            <option *ngFor="let type of verificationTypes" [value]="type">
+              {{ getVerificationTypeLabel(type) }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <span class="active-filter-count" *ngIf="hasActiveFilters()">
+          {{ (searchQuery ? 1 : 0) + (statusFilter ? 1 : 0) + (riskFilter ? 1 : 0) + (typeFilter ? 1 : 0) }}
+        </span>
+        <button class="btn btn-ghost btn-sm clear-btn" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+          &#10005; Clear filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading; else tableSkeleton">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="expand-col"></th>
+          <th (click)="onSort('verificationId')" class="sortable" [class.sort-active]="sortField === 'verificationId'">
+            ID <span class="sort-icon" [innerHTML]="getSortIcon('verificationId')"></span>
+          </th>
+          <th (click)="onSort('candidateName')" class="sortable" [class.sort-active]="sortField === 'candidateName'">
+            Candidate <span class="sort-icon" [innerHTML]="getSortIcon('candidateName')"></span>
+          </th>
+          <th (click)="onSort('company')" class="sortable" [class.sort-active]="sortField === 'company'">
+            Company <span class="sort-icon" [innerHTML]="getSortIcon('company')"></span>
+          </th>
+          <th>Type</th>
+          <th (click)="onSort('status')" class="sortable" [class.sort-active]="sortField === 'status'">
+            Status <span class="sort-icon" [innerHTML]="getSortIcon('status')"></span>
+          </th>
+          <th (click)="onSort('riskLevel')" class="sortable" [class.sort-active]="sortField === 'riskLevel'">
+            Risk <span class="sort-icon" [innerHTML]="getSortIcon('riskLevel')"></span>
+          </th>
+          <th>Progress</th>
+          <th (click)="onSort('submittedDate')" class="sortable" [class.sort-active]="sortField === 'submittedDate'">
+            Submitted <span class="sort-icon" [innerHTML]="getSortIcon('submittedDate')"></span>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let record of records; let i = index">
+          <tr
+            (click)="toggleRow(record)"
+            class="clickable-row"
+            [class.expanded]="isExpanded(record)"
+            [class.flagged-row]="isFlagged(record)"
+            [class.risk-high]="record.riskLevel === 'high' || record.riskLevel === 'critical'"
+            [style.--risk-color]="record.riskLevel === 'critical' ? 'var(--accent-red)' : record.riskLevel === 'high' ? 'var(--accent-orange)' : 'transparent'"
+          >
+            <td class="expand-col">
+              <span class="expand-icon" [class.open]="isExpanded(record)">&#9654;</span>
+            </td>
+            <td>
+              <span class="record-id">{{ record.verificationId }}</span>
+            </td>
+            <td>
+              <span class="candidate-name">{{ record.candidateName }}</span>
+            </td>
+            <td>
+              <span class="company-name">{{ record.company }}</span>
+            </td>
+            <td>
+              <span class="type-chip">{{ getVerificationTypeLabel(record.verificationType) }}</span>
+            </td>
+            <td>
+              <span class="badge-with-dot" [ngClass]="getStatusBadgeClass(record.status)">
+                <span class="status-dot-animated" [ngClass]="getStatusDotClass(record.status)"></span>
+                {{ record.status.replace('_', ' ') }}
+              </span>
+            </td>
+            <td>
+              <span class="badge-with-dot" [ngClass]="getRiskBadgeClass(record.riskLevel)">
+                <span [ngClass]="getRiskDotClass(record.riskLevel)"></span>
+                {{ record.riskLevel }}
+              </span>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    [ngClass]="getProgressColor(record.status, record.riskLevel)"
+                    [style.width.%]="record.progress"
+                  ></div>
+                </div>
+                <span class="progress-text">{{ record.progress }}%</span>
+              </div>
+            </td>
+            <td>
+              <span class="date-text">{{ formatDate(record.submittedDate) }}</span>
+            </td>
+            <td>
+              <div class="action-buttons" (click)="$event.stopPropagation()">
+                <button class="action-btn" (click)="copyVerificationId(record, $event)" title="Copy ID">
+                  <span *ngIf="copiedId !== record.id; else copiedTmpl">&#128203;</span>
+                  <ng-template #copiedTmpl><span class="copied-check">&#10003;</span></ng-template>
+                </button>
+                <button class="action-btn" [class.flag-active]="isFlagged(record)" (click)="flagRecord(record, $event)" title="Flag record">
+                  &#9873;
+                </button>
+                <button class="action-btn view-btn" (click)="viewRecord(record)" title="View details">
+                  &#128065;
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Expanded Row -->
+          <tr class="expanded-row" *ngIf="isExpanded(record)">
+            <td colspan="10">
+              <div class="expanded-content">
+                <div class="expanded-grid">
+                  <div class="expanded-card">
+                    <span class="expanded-label">Verification ID</span>
+                    <span class="expanded-value mono">{{ record.verificationId }}</span>
+                  </div>
+                  <div class="expanded-card">
+                    <span class="expanded-label">Type</span>
+                    <span class="expanded-value">{{ getVerificationTypeLabel(record.verificationType) }}</span>
+                  </div>
+                  <div class="expanded-card">
+                    <span class="expanded-label">Status</span>
+                    <span class="badge-with-dot" [ngClass]="getStatusBadgeClass(record.status)">
+                      <span [ngClass]="getStatusDotClass(record.status)"></span>
+                      {{ record.status.replace('_', ' ') }}
+                    </span>
+                  </div>
+                  <div class="expanded-card">
+                    <span class="expanded-label">Risk Level</span>
+                    <span class="badge-with-dot" [ngClass]="getRiskBadgeClass(record.riskLevel)">
+                      <span [ngClass]="getRiskDotClass(record.riskLevel)"></span>
+                      {{ record.riskLevel }}
+                    </span>
+                  </div>
+                  <div class="expanded-card">
+                    <span class="expanded-label">Submitted</span>
+                    <span class="expanded-value">{{ formatDateTime(record.submittedDate) }}</span>
+                  </div>
+                  <div class="expanded-card" *ngIf="record.completionEta">
+                    <span class="expanded-label">ETA</span>
+                    <span class="expanded-value">{{ formatDate(record.completionEta) }}</span>
+                  </div>
+                  <div class="expanded-card wide" *ngIf="record.chainHash">
+                    <span class="expanded-label">Chain Hash</span>
+                    <span class="expanded-value hash-value">{{ record.chainHash }}</span>
+                  </div>
+                  <div class="expanded-card wide" *ngIf="record.notes">
+                    <span class="expanded-label">Notes</span>
+                    <span class="expanded-value">{{ record.notes }}</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="records.length === 0">
+      <div class="empty-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+          <path d="M8 11h6"></path>
+        </svg>
+      </div>
+      <h3>No records found</h3>
+      <p>Try adjusting your filters or search query.</p>
+      <button class="btn btn-secondary btn-sm" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+        Clear all filters
+      </button>
+    </div>
+  </div>
+
+  <ng-template #tableSkeleton>
+    <div class="table-container">
+      <div class="skeleton-list" style="padding: 1rem;">
+        <div class="skeleton" style="height: 40px; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 56px; margin-bottom: 4px;" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Pagination -->
+  <div class="pagination-bar" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>&ndash;<strong>{{ currentPage * pageSize > totalRecords ? totalRecords : currentPage * pageSize }}</strong> of <strong>{{ totalRecords }}</strong>
+    </div>
+    <div class="pagination">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="onFirstPage()" title="First page">
+        &laquo;
+      </button>
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+        &lsaquo;
+      </button>
+      <button
+        class="page-btn"
+        [class.active]="currentPage === page"
+        *ngFor="let page of getPageNumbers()"
+        (click)="onPageChange(page)"
+      >
+        {{ page }}
+      </button>
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+        &rsaquo;
+      </button>
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onLastPage()" title="Last page">
+        &raquo;
+      </button>
+    </div>
+  </div>
+
+  <!-- Create Record Modal -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-content create-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>New Verification</h3>
+          <span class="modal-subtitle">Create a new background check request</span>
+        </div>
+        <button class="modal-close-btn" (click)="closeCreateModal()">&#10005;</button>
+      </div>
+      <form (ngSubmit)="submitCreateRecord()" class="modal-form">
+        <div class="form-field">
+          <input
+            id="candidateName"
+            type="text"
+            class="form-input floating-input"
+            [(ngModel)]="newRecord.candidateName"
+            name="candidateName"
+            placeholder=" "
+            [disabled]="creatingRecord"
+            required
+          />
+          <label class="floating-label" for="candidateName">Candidate Name</label>
+        </div>
+        <div class="form-field">
+          <input
+            id="company"
+            type="text"
+            class="form-input floating-input"
+            [(ngModel)]="newRecord.company"
+            name="company"
+            placeholder=" "
+            [disabled]="creatingRecord"
+            required
+          />
+          <label class="floating-label" for="company">Company</label>
+        </div>
+        <div class="form-field">
+          <select
+            id="verificationType"
+            class="form-select floating-select"
+            [(ngModel)]="newRecord.verificationType"
+            name="verificationType"
+            [disabled]="creatingRecord"
+            required
+          >
+            <option value="">Select type...</option>
+            <option *ngFor="let type of verificationTypes" [value]="type">{{ getVerificationTypeLabel(type) }}</option>
+          </select>
+          <label class="floating-label select-label" for="verificationType">Verification Type</label>
+        </div>
+        <div class="error-message" *ngIf="createError">
+          <span class="error-icon">&#9888;</span>
+          {{ createError }}
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="creatingRecord">Cancel</button>
+          <button type="submit" class="btn btn-gradient" [disabled]="creatingRecord">
+            <span *ngIf="creatingRecord" class="spinner spinner-sm"></span>
+            {{ creatingRecord ? 'Creating...' : 'Create Verification' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Detail Modal -->
+  <div class="modal-overlay" *ngIf="selectedRecord" (click)="closeDetail()">
+    <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>{{ selectedRecord.verificationId }}</h3>
+          <span class="modal-subtitle">{{ getVerificationTypeLabel(selectedRecord.verificationType) }} verification</span>
+        </div>
+        <button class="modal-close-btn" (click)="closeDetail()">&#10005;</button>
+      </div>
+      <div class="detail-content">
+        <div class="detail-cards">
+          <div class="detail-card">
+            <span class="detail-label">Candidate</span>
+            <span class="detail-value highlight">{{ selectedRecord.candidateName }}</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Company</span>
+            <span class="detail-value">{{ selectedRecord.company }}</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Type</span>
+            <span class="detail-value">{{ getVerificationTypeLabel(selectedRecord.verificationType) }}</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Status</span>
+            <span class="badge-with-dot" [ngClass]="getStatusBadgeClass(selectedRecord.status)">
+              <span [ngClass]="getStatusDotClass(selectedRecord.status)"></span>
+              {{ selectedRecord.status.replace('_', ' ') }}
+            </span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Risk Level</span>
+            <span class="badge-with-dot" [ngClass]="getRiskBadgeClass(selectedRecord.riskLevel)">
+              <span [ngClass]="getRiskDotClass(selectedRecord.riskLevel)"></span>
+              {{ selectedRecord.riskLevel }}
+            </span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Progress</span>
+            <div class="progress-cell detail-progress">
+              <div class="progress-bar" style="flex: 1;">
+                <div class="progress-fill" [style.width.%]="selectedRecord.progress"></div>
+              </div>
+              <span class="progress-text">{{ selectedRecord.progress }}%</span>
+            </div>
+          </div>
+          <div class="detail-card">
+            <span class="detail-label">Submitted</span>
+            <span class="detail-value">{{ formatDateTime(selectedRecord.submittedDate) }}</span>
+          </div>
+          <div class="detail-card" *ngIf="selectedRecord.completionEta">
+            <span class="detail-label">ETA</span>
+            <span class="detail-value">{{ formatDate(selectedRecord.completionEta) }}</span>
+          </div>
+        </div>
+        <div class="detail-card-wide" *ngIf="selectedRecord.chainHash">
+          <span class="detail-label">Chain Hash</span>
+          <span class="detail-value hash-value">{{ selectedRecord.chainHash }}</span>
+        </div>
+        <div class="detail-card-wide" *ngIf="selectedRecord.notes">
+          <span class="detail-label">Notes</span>
+          <span class="detail-value notes-value">{{ selectedRecord.notes }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

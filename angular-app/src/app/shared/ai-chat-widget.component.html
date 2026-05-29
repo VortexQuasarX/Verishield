@@ -1,0 +1,54 @@
+<!-- Floating Chat Button -->
+<button class="chat-fab" [class.active]="isOpen" (click)="toggleChat()" aria-label="AI Chat">
+  <span class="fab-icon" *ngIf="!isOpen">&#128172;</span>
+  <span class="fab-icon" *ngIf="isOpen">&#10005;</span>
+  <span class="fab-pulse" *ngIf="!isOpen"></span>
+</button>
+
+<!-- Chat Panel -->
+<div class="chat-panel" [class.open]="isOpen">
+  <div class="chat-header">
+    <div class="chat-title">
+      <span class="chat-icon">&#129302;</span>
+      <div>
+        <span class="chat-name">VeriShield AI</span>
+        <span class="chat-status">Online</span>
+      </div>
+    </div>
+    <button class="chat-close" (click)="toggleChat()">&#10005;</button>
+  </div>
+
+  <div class="chat-messages">
+    <div
+      class="message"
+      *ngFor="let msg of messages"
+      [class.user]="msg.role === 'user'"
+      [class.assistant]="msg.role === 'assistant'"
+    >
+      <div class="message-bubble">
+        <span class="message-text">{{ msg.content }}</span>
+      </div>
+    </div>
+    <div class="message assistant" *ngIf="isLoading">
+      <div class="message-bubble typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <input
+      type="text"
+      class="chat-input"
+      placeholder="Ask about verifications..."
+      [(ngModel)]="inputMessage"
+      (keydown)="onKeyPress($event)"
+      [disabled]="isLoading"
+    />
+    <button class="chat-send" (click)="sendMessage()" [disabled]="!inputMessage.trim() || isLoading">
+      &#10148;
+    </button>
+  </div>
+</div>

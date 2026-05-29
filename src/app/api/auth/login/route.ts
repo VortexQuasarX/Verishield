@@ -1,40 +1,16 @@
 // =====================================================
-// MPloyChek - Auth Login API
-// Mock JWT authentication with role-based access
+// VeriShield - Auth Login API
+// JWT authentication with role-based access via Prisma DB
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-
-interface MockUser {
-  id: string;
-  email: string;
-  name: string;
-  role: 'admin' | 'user';
-  isActive: boolean;
-}
-
-const MOCK_USERS: MockUser[] = [
-  { id: 'usr_admin', email: 'admin@mploychek.com', name: 'Rajesh Kumar', role: 'admin', isActive: true },
-  { id: 'usr_user', email: 'user@mploychek.com', name: 'Anita Sharma', role: 'user', isActive: true },
-];
-
-function generateMockToken(user: MockUser): string {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 86400,
-  }));
-  const signature = btoa(`mock-signature-${user.id}`);
-  return `${header}.${payload}.${signature}`;
-}
+import { findUserByEmailWithPassword, updateUser } from '@/lib/user-store';
+import { verifyPassword, generateToken } from '@/lib/crypto';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, role } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -43,7 +19,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = MOCK_USERS.find(u => u.email === email);
+    // Look up user from Prisma DB (includes password field)
+    const user = await findUserByEmailWithPassword(email);
 
     if (!user) {
       return NextResponse.json(
@@ -52,11 +29,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password based on role
-    const validPassword = (email === 'admin@mploychek.com' && password === 'admin123') ||
-                         (email === 'user@mploychek.com' && password === 'user123');
+    // If a role was specified in the login request, verify it matches the user's role
+    if (role && user.role !== role) {
+      return NextResponse.json(
+        { error: `This account does not have ${role} access. Please select the correct role.`, code: 'ROLE_MISMATCH' },
+        { status: 403 }
+      );
+    }
 
-    if (!validPassword) {
+    // Verify password using scrypt hash
+    const passwordValid = await verifyPassword(password, user.password);
+    if (!passwordValid) {
       return NextResponse.json(
         { error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' },
         { status: 401 }
@@ -70,7 +53,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = generateMockToken(user);
+    // Update lastLogin timestamp
+    await updateUser(user.id, { lastLogin: new Date() });
+
+    const token = generateToken({ sub: user.id, email: user.email, role: user.role });
 
     return NextResponse.json({
       token,
@@ -81,7 +67,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
         isActive: user.isActive,
         lastLogin: new Date().toISOString(),
-        avatar: undefined,
+        avatar: user.avatar,
       },
     });
   } catch {

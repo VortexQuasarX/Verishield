@@ -1,0 +1,133 @@
+<div class="animate-page chainseal-page">
+  <!-- Page Header -->
+  <div class="page-header animate-fade-up">
+    <div class="header-content">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <h1>ChainSeal</h1>
+        <p class="header-subtitle">Blockchain-sealed verification records</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" (click)="loadRecords()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="sealNewRecord()" [disabled]="sealing">
+        <span *ngIf="sealing" class="spinner spinner-sm"></span>
+        <svg *ngIf="!sealing" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        {{ sealing ? 'Sealing...' : 'Seal New Record' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Left Column: Verify + Chain Visualization -->
+    <div class="left-column">
+      <!-- Verify Record -->
+      <div class="card card-glass verify-card animate-fade-up stagger-1">
+        <div class="card-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <h3>Verify Record</h3>
+        </div>
+        <p class="verify-desc">Enter a blockchain hash to verify its authenticity on the chain.</p>
+        <div class="verify-form">
+          <input
+            type="text"
+            class="form-input"
+            placeholder="Enter hash (e.g., 0x7a3f...e91b)"
+            [(ngModel)]="verifyHash"
+            (keyup.enter)="verifyRecord()"
+            [disabled]="verifying"
+          />
+          <button class="btn btn-primary" (click)="verifyRecord()" [disabled]="!verifyHash.trim() || verifying">
+            <span *ngIf="verifying" class="spinner spinner-sm"></span>
+            {{ verifying ? 'Verifying...' : 'Verify' }}
+          </button>
+        </div>
+        <div class="verify-result animate-fade-scale" *ngIf="verifyResult" [ngClass]="verifyResult.verified ? 'success' : 'error'">
+          <div class="result-icon-wrap" [ngClass]="verifyResult.verified ? 'success' : 'error'">
+            <svg *ngIf="verifyResult.verified" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg *ngIf="!verifyResult.verified" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <span class="result-text">{{ verifyResult.message }}</span>
+        </div>
+      </div>
+
+      <!-- Blockchain Visualization -->
+      <div class="card card-glass chain-viz-card animate-fade-up stagger-2">
+        <div class="card-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <h3>Hash Chain</h3>
+        </div>
+        <div class="chain-visualization">
+          <div class="chain-blocks">
+            <ng-container *ngFor="let record of records.slice(0, 5); let i = index">
+              <div class="chain-block" [style.animation-delay]="(i * 80) + 'ms'">
+                <div class="block-icon" [class.verified]="record.verified">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div class="block-content">
+                  <span class="block-hash">{{ record.hash }}</span>
+                  <span class="block-type">{{ record.recordType }}</span>
+                </div>
+              </div>
+              <div class="chain-connector" *ngIf="i < records.slice(0, 5).length - 1">
+                <div class="connector-line"></div>
+                <div class="connector-dot"></div>
+                <div class="connector-line"></div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sealed Records -->
+    <div class="card card-glass records-card animate-fade-up stagger-3">
+      <div class="card-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3>Sealed Records</h3>
+      </div>
+      <div class="records-list" *ngIf="!loading; else loadingSkeleton">
+        <div class="record-item" *ngFor="let record of records; let i = index" [style.animation-delay]="(i * 50) + 'ms'">
+          <div class="record-header">
+            <div class="record-type">
+              <span class="type-dot" [class.verified]="record.verified"></span>
+              <span class="type-name">{{ record.recordType }}</span>
+            </div>
+            <span class="record-badge" [ngClass]="record.verified ? 'verified' : 'failed'">
+              {{ record.verified ? 'Verified' : 'Failed' }}
+            </span>
+          </div>
+          <div class="record-details">
+            <div class="detail-row">
+              <span class="detail-label">Hash</span>
+              <span class="detail-value hash-value" (click)="copyHash(record.hash)" title="Click to copy">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                {{ record.hash }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Prev Hash</span>
+              <span class="detail-value hash-secondary">{{ record.previousHash }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Sealed</span>
+              <span class="detail-value">{{ formatDate(record.sealedAt) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="records.length === 0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <p>No sealed records yet</p>
+        </div>
+      </div>
+      <ng-template #loadingSkeleton>
+        <div class="skeleton" style="height: 80px; margin-bottom: 8px;" *ngFor="let i of [1,2,3]"></div>
+      </ng-template>
+    </div>
+  </div>
+</div>

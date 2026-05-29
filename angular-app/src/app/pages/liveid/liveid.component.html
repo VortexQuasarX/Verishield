@@ -1,0 +1,144 @@
+<div class="animate-page liveid-page">
+  <!-- Page Header -->
+  <div class="page-header animate-fade-up">
+    <div class="header-content">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+      <div>
+        <h1>LiveID Verify</h1>
+        <p class="header-subtitle">Real-time liveness detection and identity verification</p>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="product-dot"></span>
+      <span>Active</span>
+    </div>
+  </div>
+
+  <!-- Step Indicator -->
+  <div class="step-indicator animate-fade-up stagger-1">
+    <div class="steps-track">
+      <div class="step" *ngFor="let step of steps; let i = index" [class.active]="currentStep >= i" [class.current]="currentStep === i">
+        <div class="step-dot">
+          <svg *ngIf="currentStep > i" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span *ngIf="currentStep <= i">{{ i + 1 }}</span>
+        </div>
+        <span class="step-label">{{ step }}</span>
+      </div>
+      <div class="step-connector" [class.filled]="currentStep >= 1"></div>
+      <div class="step-connector second" [class.filled]="currentStep >= 2"></div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Verification Flow -->
+    <div class="card card-glass flow-card animate-fade-up stagger-2">
+      <!-- Step 0: Capture -->
+      <div class="capture-step" *ngIf="currentStep === 0">
+        <div class="webcam-placeholder">
+          <div class="face-outline">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <span class="camera-text">Camera feed will appear here</span>
+          <span class="camera-hint">Position face within the frame for best results</span>
+        </div>
+        <button class="btn btn-primary w-full btn-lg" (click)="startVerification()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Capture & Verify
+        </button>
+      </div>
+
+      <!-- Step 1: Analyzing -->
+      <div class="analyze-step" *ngIf="currentStep === 1">
+        <div class="analyze-animation">
+          <div class="scan-circle">
+            <div class="scan-ring-outer"></div>
+            <div class="scan-ring-inner"></div>
+            <div class="scan-pulse"></div>
+            <svg class="scan-face" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <span class="analyze-text">Analyzing liveness...</span>
+          <span class="analyze-detail">Checking facial landmarks and depth mapping</span>
+          <div class="scan-progress-bar">
+            <div class="scan-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Result -->
+      <div class="result-step" *ngIf="currentStep === 2 && verificationResult">
+        <div class="result-banner" [class.verified]="verificationResult.status === 'verified'" [class.failed]="verificationResult.status === 'failed'">
+          <div class="result-icon-wrap">
+            <svg *ngIf="verificationResult.status === 'verified'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <svg *ngIf="verificationResult.status === 'failed'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <div class="result-text-group">
+            <span class="result-title">{{ verificationResult.status === 'verified' ? 'Identity Verified' : 'Verification Failed' }}</span>
+            <span class="result-subtitle">{{ verificationResult.candidateName }}</span>
+          </div>
+        </div>
+
+        <div class="score-gauges">
+          <div class="score-gauge-item">
+            <div class="mini-gauge" [style.--gauge-color]="getScoreColor(verificationResult.matchScore)">
+              <svg viewBox="0 0 100 100" class="mini-gauge-svg">
+                <circle cx="50" cy="50" r="40" class="mini-gauge-bg"/>
+                <circle cx="50" cy="50" r="40" class="mini-gauge-fill"
+                  [style.stroke-dashoffset]="251 - (251 * verificationResult.matchScore / 100)"
+                  [style.stroke]="getScoreColor(verificationResult.matchScore)"/>
+              </svg>
+              <span class="mini-gauge-value" [style.color]="getScoreColor(verificationResult.matchScore)">{{ verificationResult.matchScore }}%</span>
+            </div>
+            <span class="gauge-label">Match Score</span>
+          </div>
+          <div class="score-gauge-item">
+            <div class="mini-gauge" [style.--gauge-color]="getScoreColor(verificationResult.livenessScore)">
+              <svg viewBox="0 0 100 100" class="mini-gauge-svg">
+                <circle cx="50" cy="50" r="40" class="mini-gauge-bg"/>
+                <circle cx="50" cy="50" r="40" class="mini-gauge-fill"
+                  [style.stroke-dashoffset]="251 - (251 * verificationResult.livenessScore / 100)"
+                  [style.stroke]="getScoreColor(verificationResult.livenessScore)"/>
+              </svg>
+              <span class="mini-gauge-value" [style.color]="getScoreColor(verificationResult.livenessScore)">{{ verificationResult.livenessScore }}%</span>
+            </div>
+            <span class="gauge-label">Liveness Score</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary w-full" (click)="resetVerification()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          New Verification
+        </button>
+      </div>
+    </div>
+
+    <!-- Verification History -->
+    <div class="card card-glass history-card animate-fade-up stagger-3">
+      <div class="card-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h3>Verification History</h3>
+      </div>
+      <div class="history-list" *ngIf="!loading; else loadingSkeleton">
+        <div class="history-item" *ngFor="let v of verifications">
+          <div class="history-avatar">{{ v.candidateName.charAt(0) }}</div>
+          <div class="history-info">
+            <span class="history-name">{{ v.candidateName }}</span>
+            <span class="history-date">{{ formatDate(v.createdAt) }}</span>
+          </div>
+          <div class="history-scores">
+            <span class="mini-score" [style.color]="getScoreColor(v.matchScore)">M: {{ v.matchScore }}%</span>
+            <span class="mini-score" [style.color]="getScoreColor(v.livenessScore)">L: {{ v.livenessScore }}%</span>
+          </div>
+          <span class="status-dot-badge" [ngClass]="v.status">{{ v.status }}</span>
+        </div>
+        <div class="empty-state" *ngIf="verifications.length === 0">
+          <p>No verifications yet</p>
+        </div>
+      </div>
+      <ng-template #loadingSkeleton>
+        <div class="skeleton" style="height: 48px; margin-bottom: 8px;" *ngFor="let i of [1,2,3]"></div>
+      </ng-template>
+    </div>
+  </div>
+</div>

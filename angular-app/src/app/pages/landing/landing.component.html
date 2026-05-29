@@ -1,0 +1,267 @@
+<div class="landing-page animate-page">
+
+  <!-- ========== FIXED NAVBAR ========== -->
+  <nav class="navbar" [class.scrolled]="false">
+    <div class="navbar-inner">
+      <a class="navbar-brand" routerLink="/">
+        <span class="brand-diamond">&#9670;</span>
+        <span class="brand-text">VeriShield</span>
+      </a>
+
+      <div class="navbar-links">
+        <button
+          class="nav-link"
+          *ngFor="let link of navLinks; trackBy: trackByFn"
+          (click)="smoothScrollTo(link.anchor)"
+        >
+          {{ link.label }}
+        </button>
+      </div>
+
+      <div class="navbar-actions">
+        <button class="btn btn-ghost btn-sm" (click)="navigateToLogin()">Log in</button>
+        <button class="btn btn-primary btn-sm" (click)="navigateToLogin()">Get Started &#8594;</button>
+      </div>
+
+      <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">
+        <span [class.open]="mobileMenuOpen">&#9776;</span>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" [class.open]="mobileMenuOpen" *ngIf="mobileMenuOpen">
+      <button class="mobile-nav-link" *ngFor="let link of navLinks; trackBy: trackByFn" (click)="smoothScrollTo(link.anchor); mobileMenuOpen = false">
+        {{ link.label }}
+      </button>
+      <button class="btn btn-primary w-full" (click)="navigateToLogin()">Get Started &#8594;</button>
+    </div>
+  </nav>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero">
+    <!-- Animated background particles -->
+    <div class="hero-particles">
+      <div class="particle p1"></div>
+      <div class="particle p2"></div>
+      <div class="particle p3"></div>
+      <div class="particle p4"></div>
+      <div class="particle p5"></div>
+      <div class="particle p6"></div>
+      <div class="particle p7"></div>
+      <div class="particle p8"></div>
+      <div class="particle p9"></div>
+      <div class="particle p10"></div>
+      <div class="particle p11"></div>
+      <div class="particle p12"></div>
+    </div>
+
+    <!-- Aurora background glow -->
+    <div class="hero-aurora"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-up stagger-1">
+        <span class="badge-dot"></span>
+        Trusted by 500+ Enterprises Across India
+      </div>
+
+      <h1 class="hero-title animate-fade-up stagger-2">
+        <span class="aurora-text">Verify Smarter,</span><br />
+        <span class="aurora-text">Hire Better</span>
+      </h1>
+
+      <p class="hero-subtitle animate-fade-up stagger-3">
+        AI-powered background verification platform with blockchain-sealed records,
+        real-time compliance monitoring, and 99.7% accuracy. Built for India's DPDP Act.
+      </p>
+
+      <div class="hero-actions animate-fade-up stagger-4">
+        <button class="btn btn-primary btn-lg hero-cta-primary" (click)="navigateToLogin()">
+          Start Verifying &#8594;
+        </button>
+        <button class="btn btn-secondary btn-lg" (click)="smoothScrollTo('how-it-works')">
+          &#9654; Watch Demo
+        </button>
+      </div>
+
+      <!-- Floating stats badge -->
+      <div class="hero-float-badge animate-fade-up stagger-5">
+        <div class="float-badge-inner">
+          <span class="float-badge-icon">⚡</span>
+          <div class="float-badge-content">
+            <span class="float-badge-value">99.7%</span>
+            <span class="float-badge-label">Accuracy Rate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TRUSTED BY SECTION ========== -->
+  <section class="trusted-section">
+    <div class="trusted-inner">
+      <span class="trusted-label">Trusted by industry leaders</span>
+      <div class="trusted-strip">
+        <div class="trusted-track">
+          <span class="trusted-company" *ngFor="let company of trustedCompanies; trackBy: trackByFn">{{ company }}</span>
+          <span class="trusted-company" *ngFor="let company of trustedCompanies; trackBy: trackByFn">{{ company }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STATS SECTION ========== -->
+  <section class="stats-section" id="stats">
+    <div class="stats-inner">
+      <div
+        class="stat-item animate-fade-up"
+        *ngFor="let stat of stats; let i = index; trackBy: trackByFn"
+        [ngClass]="'stagger-' + (i + 1)"
+      >
+        <span class="stat-value animate-count">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+        <div class="stat-glow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES GRID ========== -->
+  <section class="section" id="features">
+    <div class="section-inner">
+      <div class="section-header animate-fade-up">
+        <span class="section-tag">Features</span>
+        <h2 class="section-title">Enterprise-Grade <span class="gradient-text">Verification</span></h2>
+        <p class="section-desc">Six powerful capabilities working together for comprehensive background verification</p>
+      </div>
+
+      <div class="features-grid">
+        <div
+          class="feature-card card-glass animate-fade-up"
+          *ngFor="let feature of features; let i = index; trackBy: trackByFn"
+          [ngClass]="'stagger-' + (i + 1)"
+        >
+          <div class="feature-icon-wrap">
+            <span class="feature-icon">{{ feature.icon }}</span>
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-desc">{{ feature.desc }}</p>
+          <div class="feature-glow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== AI PRODUCTS SHOWCASE ========== -->
+  <section class="section section-alt" id="products">
+    <div class="section-inner">
+      <div class="section-header animate-fade-up">
+        <span class="section-tag">AI Products</span>
+        <h2 class="section-title">The <span class="gradient-text">Verification Suite</span></h2>
+        <p class="section-desc">Seven specialized AI engines powering end-to-end background verification</p>
+      </div>
+
+      <div class="products-grid">
+        <div
+          class="product-card card-glass animate-fade-up"
+          *ngFor="let product of products; let i = index; trackBy: trackByFn"
+          [ngClass]="'stagger-' + (i + 1)"
+        >
+          <div class="product-top">
+            <div class="product-icon" [ngClass]="'icon-' + product.color">
+              {{ product.icon }}
+            </div>
+          </div>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-desc">{{ product.desc }}</p>
+          <a class="product-link" [routerLink]="product.route">
+            Explore &#8594;
+          </a>
+          <div class="product-glow" [ngClass]="'glow-' + product.color"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== HOW IT WORKS ========== -->
+  <section class="section" id="how-it-works">
+    <div class="section-inner">
+      <div class="section-header animate-fade-up">
+        <span class="section-tag">Process</span>
+        <h2 class="section-title">How It <span class="gradient-text">Works</span></h2>
+        <p class="section-desc">Three simple steps from request to verified report</p>
+      </div>
+
+      <div class="steps-container">
+        <div class="steps-grid">
+          <div
+            class="step-card animate-fade-up"
+            *ngFor="let step of steps; let i = index; trackBy: trackByFn"
+            [ngClass]="'stagger-' + (i + 1)"
+          >
+            <div class="step-icon-wrap">
+              <span class="step-icon">{{ step.icon }}</span>
+              <span class="step-num">{{ step.num }}</span>
+            </div>
+            <h3 class="step-title">{{ step.title }}</h3>
+            <p class="step-desc">{{ step.desc }}</p>
+          </div>
+        </div>
+
+        <!-- Connecting line -->
+        <div class="steps-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow arrow-1">&#8594;</div>
+          <div class="connector-arrow arrow-2">&#8594;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA SECTION ========== -->
+  <section class="cta-section">
+    <div class="cta-inner animate-fade-up">
+      <div class="cta-glow"></div>
+      <h2 class="cta-title">Ready to <span class="gradient-text">Transform</span> Your Verification?</h2>
+      <p class="cta-desc">Join 500+ enterprises already using VeriShield for faster, smarter, and more reliable background checks.</p>
+      <div class="cta-actions">
+        <button class="btn btn-primary btn-lg" (click)="navigateToLogin()">Get Started Free &#8594;</button>
+        <button class="btn btn-secondary btn-lg" (click)="navigateToLogin()">Talk to Sales</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand-col">
+          <div class="footer-brand">
+            <span class="brand-diamond">&#9670;</span>
+            <span class="brand-text">VeriShield</span>
+          </div>
+          <p class="footer-tagline">AI-powered background verification for the modern enterprise.</p>
+        </div>
+
+        <div class="footer-links-grid">
+          <div class="footer-link-col">
+            <h4 class="footer-col-title">Product</h4>
+            <a class="footer-link" *ngFor="let link of footerLinks.product; trackBy: trackByFn" [routerLink]="link.route">{{ link.label }}</a>
+          </div>
+          <div class="footer-link-col">
+            <h4 class="footer-col-title">Company</h4>
+            <a class="footer-link" *ngFor="let link of footerLinks.company; trackBy: trackByFn" [routerLink]="link.route">{{ link.label }}</a>
+          </div>
+          <div class="footer-link-col">
+            <h4 class="footer-col-title">Legal</h4>
+            <a class="footer-link" *ngFor="let link of footerLinks.legal; trackBy: trackByFn" [routerLink]="link.route">{{ link.label }}</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 VeriShield Technologies Pvt. Ltd. All rights reserved.</p>
+        <p class="footer-sub">Built with &#9829; in India. DPDP Act Compliant.</p>
+      </div>
+    </div>
+  </footer>
+
+</div>

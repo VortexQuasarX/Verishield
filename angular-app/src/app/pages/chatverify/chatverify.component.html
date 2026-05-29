@@ -1,0 +1,135 @@
+<div class="animate-page chatverify-page">
+  <!-- Page Header -->
+  <div class="page-header animate-fade-up">
+    <div class="header-content">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div>
+        <h1>ChatVerify</h1>
+        <p class="header-subtitle">WhatsApp-based verification conversations</p>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openNewSessionForm()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Session
+    </button>
+  </div>
+
+  <div class="chat-layout">
+    <!-- Session List Sidebar -->
+    <div class="session-sidebar card card-glass animate-fade-up stagger-1">
+      <div class="sidebar-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <h3>Sessions</h3>
+      </div>
+      <div class="session-list" *ngIf="!loading; else loadingSkeleton">
+        <div
+          class="session-item"
+          *ngFor="let session of sessions"
+          [class.selected]="selectedSession?.id === session.id"
+          (click)="selectSession(session)"
+        >
+          <div class="session-avatar">{{ session.candidateName.charAt(0) }}</div>
+          <div class="session-info">
+            <span class="session-name">{{ session.candidateName }}</span>
+            <span class="session-last-msg" *ngIf="session.lastMessage">{{ session.lastMessage }}</span>
+            <span class="session-time">{{ formatDate(session.createdAt) }}</span>
+          </div>
+          <span class="session-status-indicator" [ngClass]="session.status"></span>
+        </div>
+      </div>
+      <ng-template #loadingSkeleton>
+        <div class="skeleton" style="height: 48px; margin-bottom: 8px;" *ngFor="let i of [1,2,3]"></div>
+      </ng-template>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area animate-fade-up stagger-2" *ngIf="selectedSession; else noSelection">
+      <div class="chat-header-bar">
+        <div class="chat-header-left">
+          <div class="chat-header-avatar">{{ selectedSession.candidateName.charAt(0) }}</div>
+          <div class="chat-header-info">
+            <span class="chat-header-name">{{ selectedSession.candidateName }}</span>
+            <span class="chat-header-status" [ngClass]="selectedSession.status">{{ getVerificationStatus(selectedSession) }}</span>
+          </div>
+        </div>
+        <span class="chat-header-date">{{ formatDate(selectedSession.createdAt) }}</span>
+      </div>
+
+      <div class="chat-messages-container" #chatContainer>
+        <div class="message" *ngFor="let msg of messages; let i = index" [ngClass]="msg.role" [style.animation-delay]="(i * 30) + 'ms'">
+          <div class="message-bubble">
+            <div class="message-meta">
+              <span class="message-role">{{ msg.role === 'agent' ? 'Agent' : msg.role === 'candidate' ? 'Candidate' : 'System' }}</span>
+              <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+            </div>
+            <span class="message-text">{{ msg.content }}</span>
+          </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="message agent" *ngIf="sending">
+          <div class="message-bubble typing-bubble">
+            <div class="typing-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-end-marker"></div>
+      </div>
+
+      <div class="chat-input-bar">
+        <input
+          type="text"
+          class="chat-input"
+          placeholder="Type a message..."
+          [(ngModel)]="inputMessage"
+          (keydown)="onKeyPress($event)"
+          [disabled]="sending"
+        />
+        <button class="send-btn" (click)="sendMessage()" [disabled]="!inputMessage.trim() || sending">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <ng-template #noSelection>
+      <div class="card card-glass empty-card animate-fade-up stagger-2">
+        <div class="empty-icon-wrap">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Select a Session</h3>
+        <p>Choose a verification session to view the conversation.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- New Session Modal -->
+  <div class="modal-overlay" *ngIf="showNewSession" (click)="closeNewSessionForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>New ChatVerify Session</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeNewSessionForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form (ngSubmit)="createSession()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label" for="candidateName">Candidate Name</label>
+          <input id="candidateName" type="text" class="form-input" [(ngModel)]="newCandidateName" name="candidateName" placeholder="Enter candidate name" [disabled]="creatingSession" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeNewSessionForm()" [disabled]="creatingSession">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newCandidateName.trim() || creatingSession">
+            <span *ngIf="creatingSession" class="spinner spinner-sm"></span>
+            {{ creatingSession ? 'Creating...' : 'Start Session' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

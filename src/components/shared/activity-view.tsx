@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Activity, RefreshCw, Filter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, RefreshCw, Filter, ChevronDown, ChevronRight, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,12 +18,14 @@ const CATEGORY_COLORS: Record<ActivityCategory, string> = {
   admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
   system: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
   general: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+  ai: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
 };
 
 export function ActivityView() {
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
 
   const fetchActivities = useCallback(async () => {
     setIsLoading(true);
@@ -66,7 +69,7 @@ export function ActivityView() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Activity Log</h1>
+          <h1 className="text-2xl font-bold tracking-tight"><span className="text-gradient">Activity Log</span></h1>
           <p className="text-muted-foreground text-sm mt-1">System-wide audit trail and activity timeline</p>
         </div>
         <div className="flex items-center gap-2">
@@ -81,6 +84,7 @@ export function ActivityView() {
               <SelectItem value="verification">Verification</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="system">System</SelectItem>
+              <SelectItem value="general">General</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" onClick={fetchActivities} className="h-9">
@@ -90,13 +94,13 @@ export function ActivityView() {
         </div>
       </div>
 
-      <Card className="border-border/50">
+      <Card className="border-border/50 card-premium shadow-luxury">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="divide-y divide-border/50">
               {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 p-4">
-                  <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                  <Skeleton className="w-8 h-8 rounded-full flex-shrink-0 skeleton-shimmer" />
                   <div className="flex-1">
                     <Skeleton className="h-4 w-64 mb-1" />
                     <Skeleton className="h-3 w-32" />
@@ -112,35 +116,88 @@ export function ActivityView() {
             </div>
           ) : (
             <div className="divide-y divide-border/50 max-h-[600px] overflow-y-auto">
-              {filtered.map((activity, i) => (
-                <motion.div
-                  key={activity.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-primary">
-                      {activity.userName?.charAt(0) || 'S'}
-                    </span>
+              {filtered.map((activity, i) => {
+                const isExpanded = expandedActivity === activity.id;
+                return (
+                  <div key={activity.id}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:from-primary/[0.03] hover:to-transparent transition-colors cursor-pointer"
+                      onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-semibold text-primary">
+                          {activity.userName?.charAt(0) || 'S'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{activity.action}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">{activity.userName || 'System'}</span>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-xs text-muted-foreground">{formatTime(activity.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Badge variant="secondary" className={`text-[10px] bg-gradient-to-r ${CATEGORY_COLORS[activity.category]}`}>
+                          {activity.category}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground w-14 text-right">{formatTimeAgo(activity.createdAt)}</span>
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                    </motion.div>
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 pl-16">
+                            <div className="p-3 rounded-lg glass-premium border border-border/30 space-y-2">
+                              {activity.details && (
+                                <div>
+                                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Details</span>
+                                  <p className="text-sm text-foreground mt-0.5">{activity.details}</p>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                {activity.userId && (
+                                  <span>User ID: <span className="font-mono">{activity.userId}</span></span>
+                                )}
+                                <span>Timestamp: <span className="font-mono">{new Date(activity.createdAt).toISOString()}</span></span>
+                              </div>
+                              <div className="pt-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-[11px] gap-1.5 px-2.5"
+                                  onClick={() => {
+                                    const info = `Action: ${activity.action}\nUser: ${activity.userName || 'System'}\nUser ID: ${activity.userId || 'N/A'}\nCategory: ${activity.category}\nDetails: ${activity.details || 'N/A'}\nTimestamp: ${new Date(activity.createdAt).toISOString()}`;
+                                    navigator.clipboard.writeText(info);
+                                    toast('Activity details copied to clipboard');
+                                  }}
+                                >
+                                  <Copy className="w-3 h-3" />
+                                  Copy Details
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{activity.action}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">{activity.userName || 'System'}</span>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">{formatTime(activity.createdAt)}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge variant="secondary" className={`text-[10px] ${CATEGORY_COLORS[activity.category]}`}>
-                      {activity.category}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground w-14 text-right">{formatTimeAgo(activity.createdAt)}</span>
-                  </div>
-                </motion.div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

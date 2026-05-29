@@ -1,10 +1,10 @@
 // =====================================================
-// MPloyChek - Global State Store (Zustand)
+// VeriShield Pro - Global State Store (Zustand)
 // Centralized state management for auth, navigation, and UI
 // =====================================================
 
 import { create } from 'zustand';
-import type { AuthUser, AppView, AppNotification, ActivityLog } from '@/types';
+import type { AuthUser, AppView, AppNotification, ActivityLog, ChatMessage } from '@/types';
 import { getStoredUser, getStoredToken, setAuth, clearAuth } from '@/lib/api';
 
 // ---- Auth Store ----
@@ -13,10 +13,12 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  showLoginDialog: boolean;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   hydrate: () => void;
+  setShowLoginDialog: (show: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -24,18 +26,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: null,
   isAuthenticated: false,
   isLoading: true,
+  showLoginDialog: false,
 
   login: (token: string, user: AuthUser) => {
     setAuth(token, user);
-    set({ token, user, isAuthenticated: true, isLoading: false });
+    set({ token, user, isAuthenticated: true, isLoading: false, showLoginDialog: false });
   },
 
   logout: () => {
     clearAuth();
-    set({ token: null, user: null, isAuthenticated: false, isLoading: false });
+    set({ token: null, user: null, isAuthenticated: false, isLoading: false, currentView: 'landing' });
   },
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setShowLoginDialog: (show: boolean) => set({ showLoginDialog: show }),
 
   hydrate: () => {
     const token = getStoredToken();
@@ -119,6 +123,27 @@ export const useActivityStore = create<ActivityState>((set) => ({
     set((state) => ({
       activities: [activity, ...state.activities].slice(0, 50),
     })),
+}));
+
+// ---- AI Chat Store ----
+interface AIChatState {
+  messages: ChatMessage[];
+  isTyping: boolean;
+  addMessage: (message: ChatMessage) => void;
+  setTyping: (typing: boolean) => void;
+  clearMessages: () => void;
+}
+
+export const useAIChatStore = create<AIChatState>((set) => ({
+  messages: [],
+  isTyping: false,
+
+  addMessage: (message: ChatMessage) =>
+    set((state) => ({ messages: [...state.messages, message] })),
+
+  setTyping: (typing: boolean) => set({ isTyping: typing }),
+
+  clearMessages: () => set({ messages: [] }),
 }));
 
 // ---- UI Store ----

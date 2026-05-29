@@ -1,5 +1,5 @@
 // =====================================================
-// MPloyChek - API Client
+// VeriShield - API Client
 // Centralized API layer with auth, retry, and delay support
 // =====================================================
 
@@ -20,8 +20,8 @@ import type {
 const API_BASE = '/api';
 
 // ---- Token Management ----
-const TOKEN_KEY = 'mploychek_token';
-const USER_KEY = 'mploychek_user';
+const TOKEN_KEY = 'verishield_token';
+const USER_KEY = 'verishield_user';
 
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -116,13 +116,14 @@ export const authApi = {
 
 // ---- Records API ----
 export const recordsApi = {
-  getAll: (params?: { delay?: number; page?: number; pageSize?: number; search?: string; status?: string; riskLevel?: string; sort?: string; sortDir?: string }) => {
+  getAll: (params?: { delay?: number; page?: number; pageSize?: number; search?: string; status?: string; verificationType?: string; riskLevel?: string; sort?: string; sortDir?: string }) => {
     const query = new URLSearchParams();
     if (params?.delay) query.set('delay', String(params.delay));
     if (params?.page) query.set('page', String(params.page));
     if (params?.pageSize) query.set('pageSize', String(params.pageSize));
     if (params?.search) query.set('search', params.search);
     if (params?.status) query.set('status', params.status);
+    if (params?.verificationType) query.set('verificationType', params.verificationType);
     if (params?.riskLevel) query.set('riskLevel', params.riskLevel);
     if (params?.sort) query.set('sort', params.sort);
     if (params?.sortDir) query.set('sortDir', params.sortDir);
@@ -185,4 +186,147 @@ export const notificationsApi = {
     apiFetch<AppNotification[]>('/notifications'),
   markRead: (id: string) =>
     apiFetch<{ success: boolean }>(`/notifications/${id}/read`, { method: 'PUT' }),
+};
+
+// ---- AI Chat API ----
+export const aiChatApi = {
+  sendMessage: (message: string, context?: string, conversationHistory?: Array<{role: string; content: string}>) =>
+    apiFetch<{ reply: string; response?: string; timestamp: string }>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, context, conversationHistory }),
+    }),
+};
+
+// ---- AI Risk Analysis API (CredScan) ----
+export const aiRiskApi = {
+  analyze: (candidateName: string, verificationData?: Record<string, unknown>) =>
+    apiFetch<{
+      overallRiskScore: number;
+      riskFactors: Array<{ category: string; severity: string; description: string; confidence: number }>;
+      recommendations: string[];
+      summary?: string;
+    }>('/ai/risk-analysis', {
+      method: 'POST',
+      body: JSON.stringify({ candidateName, verificationData }),
+    }),
+};
+
+// ---- AI Document Forensics API (ForensiDoc) ----
+export const aiForensiDocApi = {
+  analyze: (documentImageUrl: string, analysisType?: string) =>
+    apiFetch<{
+      documentType: string;
+      extractedText: string;
+      extractedFields: Array<{ label: string; value: string }>;
+      forgeryIndicators: string[];
+      authenticityScore: number;
+    }>('/ai/forensidoc', {
+      method: 'POST',
+      body: JSON.stringify({ documentImageUrl, analysisType }),
+    }),
+};
+
+// ---- AI Insights API (Dashboard) ----
+export const aiInsightsApi = {
+  getInsights: (stats?: Record<string, unknown>) =>
+    apiFetch<{
+      insights: Array<{ icon: string; text: string; color: string; bg: string; accent: string }>;
+    }>('/ai/insights', {
+      method: 'POST',
+      body: JSON.stringify({ stats }),
+    }),
+};
+
+// ---- LiveID Analyze API ----
+export const liveidAnalyzeApi = {
+  analyze: (imageBase64: string) =>
+    apiFetch<{
+      faceDetected: boolean;
+      qualityScore: number;
+      livenessScore: number;
+      antiSpoofScore: number;
+      faceMatchScore: number;
+      assessment: string;
+    }>('/liveid/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ imageBase64 }),
+    }),
+};
+
+// ---- DeepGuard Analyze API ----
+export const deepguardAnalyzeApi = {
+  analyze: (imageBase64: string) =>
+    apiFetch<{
+      faceDetected: boolean;
+      faceCount: number;
+      livenessScore: number;
+      deepfakeProbability: number;
+      anomalies: string[];
+      assessment: string;
+    }>('/deepguard/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ imageBase64 }),
+    }),
+};
+
+// ---- ChatVerify Chat API ----
+export const chatverifyChatApi = {
+  chat: (message: string, conversationHistory: Array<{ role: string; content: string }>) =>
+    apiFetch<{ reply: string; timestamp: string }>('/chatverify/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, conversationHistory }),
+    }),
+};
+
+// ---- AI ForensiDoc Analyze API ----
+export const aiForensiDocAnalyzeApi = {
+  analyze: (documentImageBase64: string, analysisType?: string) =>
+    apiFetch<{
+      documentType: string;
+      extractedText: string;
+      extractedFields: Array<{ label: string; value: string }>;
+      forgeryIndicators: string[];
+      authenticityScore: number;
+      assessment: string;
+    }>('/ai/forensidoc/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ documentImageBase64, analysisType }),
+    }),
+};
+
+// ---- AI Nexus Agent API ----
+export const aiNexusApi = {
+  predict: (action: string, context?: Record<string, unknown>) =>
+    apiFetch<{
+      result: Record<string, unknown>;
+      message: string;
+    }>('/ai/nexus', {
+      method: 'POST',
+      body: JSON.stringify({ action, context }),
+    }),
+};
+
+// ---- Settings API ----
+export const settingsApi = {
+  getAll: () =>
+    apiFetch<Record<string, string>>('/settings'),
+  update: (settings: Record<string, string>) =>
+    apiFetch<Record<string, string>>('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    }),
+};
+
+// ---- Escalation API ----
+export const escalationApi = {
+  check: () =>
+    apiFetch<{
+      escalated: number;
+      message: string;
+      autoEscalationEnabled: boolean;
+      thresholdHours?: number;
+      checkedAt?: string;
+    }>('/escalation/check', {
+      method: 'POST',
+    }),
 };

@@ -1,0 +1,216 @@
+<div class="animate-page deepguard-page">
+  <!-- Page Header -->
+  <div class="page-header animate-fade-up">
+    <div class="header-content">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <h1>DeepGuard AI</h1>
+        <p class="header-subtitle">Deepfake detection and video analysis engine</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" (click)="loadSessions()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openNewSessionForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Session
+      </button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Session List -->
+    <div class="card card-glass sessions-card animate-fade-up stagger-1">
+      <div class="card-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <h3>Sessions</h3>
+      </div>
+      <div class="session-list" *ngIf="!loading; else loadingSkeleton">
+        <div
+          class="session-item"
+          *ngFor="let session of sessions"
+          [class.selected]="selectedSession?.id === session.id"
+          (click)="selectSession(session)"
+        >
+          <div class="session-threat-indicator" [ngClass]="session.deepfakeScore !== undefined ? (session.deepfakeScore > 60 ? 'danger' : session.deepfakeScore > 30 ? 'warning' : 'safe') : 'unknown'">
+            <svg *ngIf="session.deepfakeScore === undefined || session.deepfakeScore <= 30" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg *ngIf="session.deepfakeScore !== undefined && session.deepfakeScore > 30 && session.deepfakeScore <= 60" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <svg *ngIf="session.deepfakeScore !== undefined && session.deepfakeScore > 60" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <div class="session-content">
+            <div class="session-header">
+              <span class="session-name">{{ session.name }}</span>
+              <span class="session-badge" [ngClass]="'badge-' + (session.status === 'analyzing' ? 'in_progress' : session.status)">{{ session.status }}</span>
+            </div>
+            <div class="session-meta">
+              <span class="session-date">{{ formatDate(session.createdAt) }}</span>
+              <span class="session-score" *ngIf="session.deepfakeScore !== undefined" [style.color]="getDeepfakeScoreColor(session.deepfakeScore)">
+                {{ session.deepfakeScore }}% deepfake
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="sessions.length === 0">
+          <p>No sessions yet</p>
+        </div>
+      </div>
+      <ng-template #loadingSkeleton>
+        <div class="skeleton" style="height: 64px; margin-bottom: 8px;" *ngFor="let i of [1,2,3]"></div>
+      </ng-template>
+    </div>
+
+    <!-- Analysis Area -->
+    <div class="analysis-area">
+      <ng-container *ngIf="selectedSession; else noSelection">
+        <!-- Upload / Analyze -->
+        <div class="card card-glass upload-card animate-fade-up stagger-2" *ngIf="!analysisResult && !analyzing">
+          <div class="card-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <h3>{{ selectedSession.name }}</h3>
+          </div>
+          <div class="video-upload-area">
+            <div class="upload-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </div>
+            <span class="upload-text">Upload video for deepfake analysis</span>
+            <span class="upload-hint">MP4, AVI, MOV up to 500MB</span>
+          </div>
+          <button class="btn btn-primary w-full btn-lg" (click)="startAnalysis()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Start DeepGuard Analysis
+          </button>
+        </div>
+
+        <!-- Analyzing -->
+        <div class="card card-glass loading-card animate-fade-up stagger-2" *ngIf="analyzing">
+          <div class="loading-animation">
+            <div class="scan-ring-outer"></div>
+            <div class="scan-ring-inner"></div>
+            <div class="scan-pulse"></div>
+            <svg class="scan-shield" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="scan-label">Analyzing video frames with DeepGuard AI...</span>
+            <div class="scan-progress-bar">
+              <div class="scan-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <ng-container *ngIf="analysisResult && !analyzing">
+          <!-- Threat Level & Score Cards -->
+          <div class="threat-banner animate-fade-scale" [ngClass]="analysisResult.deepfakeScore <= 30 ? 'threat-low' : analysisResult.deepfakeScore <= 60 ? 'threat-medium' : 'threat-high'">
+            <div class="threat-icon-wrap">
+              <svg *ngIf="analysisResult.deepfakeScore <= 30" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg *ngIf="analysisResult.deepfakeScore > 30 && analysisResult.deepfakeScore <= 60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <svg *ngIf="analysisResult.deepfakeScore > 60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div class="threat-text">
+              <span class="threat-title">{{ analysisResult.deepfakeScore <= 30 ? 'Low Threat' : analysisResult.deepfakeScore <= 60 ? 'Moderate Threat' : 'High Threat' }}</span>
+              <span class="threat-subtitle">{{ analysisResult.deepfakeScore <= 30 ? 'Video appears authentic' : analysisResult.deepfakeScore <= 60 ? 'Requires manual review' : 'Likely deepfake detected' }}</span>
+            </div>
+          </div>
+
+          <div class="score-row animate-fade-up stagger-2">
+            <div class="card card-glass score-card">
+              <span class="score-label">Deepfake Score</span>
+              <div class="score-gauge-mini" [style.--gauge-color]="getDeepfakeScoreColor(analysisResult.deepfakeScore)">
+                <svg viewBox="0 0 100 100" class="mini-gauge-svg">
+                  <circle cx="50" cy="50" r="38" class="mini-gauge-bg"/>
+                  <circle cx="50" cy="50" r="38" class="mini-gauge-fill"
+                    [style.stroke-dashoffset]="239 - (239 * analysisResult.deepfakeScore / 100)"
+                    [style.stroke]="getDeepfakeScoreColor(analysisResult.deepfakeScore)"/>
+                </svg>
+                <span class="mini-gauge-value" [style.color]="getDeepfakeScoreColor(analysisResult.deepfakeScore)">{{ analysisResult.deepfakeScore }}%</span>
+              </div>
+              <span class="score-hint">{{ analysisResult.deepfakeScore <= 30 ? 'Likely Authentic' : analysisResult.deepfakeScore <= 60 ? 'Needs Review' : 'Likely Deepfake' }}</span>
+            </div>
+            <div class="card card-glass score-card">
+              <span class="score-label">Confidence</span>
+              <div class="score-gauge-mini" style="--gauge-color: var(--accent-teal)">
+                <svg viewBox="0 0 100 100" class="mini-gauge-svg">
+                  <circle cx="50" cy="50" r="38" class="mini-gauge-bg"/>
+                  <circle cx="50" cy="50" r="38" class="mini-gauge-fill"
+                    [style.stroke-dashoffset]="239 - (239 * analysisResult.confidence / 100)"
+                    stroke="var(--accent-teal)"/>
+                </svg>
+                <span class="mini-gauge-value" style="color: var(--accent-teal)">{{ analysisResult.confidence }}%</span>
+              </div>
+              <span class="score-hint">Analysis confidence level</span>
+            </div>
+          </div>
+
+          <!-- Frame Analysis -->
+          <div class="card card-glass animate-fade-up stagger-3">
+            <div class="card-section-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
+              <h3>Frame-by-Frame Analysis</h3>
+            </div>
+            <div class="frames-grid">
+              <div class="frame-item" *ngFor="let frame of analysisResult.frameAnalysis; let i = index" [ngClass]="getFrameFlagClass(frame.flag)" [style.animation-delay]="(i * 40) + 'ms'">
+                <div class="frame-num-wrap">
+                  <span class="frame-num">Frame {{ frame.frame }}</span>
+                  <span class="frame-flag" [ngClass]="frame.flag">{{ frame.flag }}</span>
+                </div>
+                <div class="frame-bar-container">
+                  <div class="frame-bar" [style.width.%]="frame.score" [style.background]="getFrameColor(frame.score)"></div>
+                </div>
+                <span class="frame-score" [style.color]="getFrameColor(frame.score)">{{ frame.score }}%</span>
+                <span class="frame-time">{{ frame.timestamp }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendation -->
+          <div class="card card-glass recommendation-card animate-fade-up stagger-4">
+            <div class="rec-icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+            </div>
+            <div class="rec-content">
+              <span class="rec-title">AI Recommendation</span>
+              <p>{{ analysisResult.recommendation }}</p>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #noSelection>
+        <div class="card card-glass empty-card animate-fade-up stagger-2">
+          <div class="empty-icon-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Select a Session</h3>
+          <p>Choose a session from the list to start deepfake analysis.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- New Session Modal -->
+  <div class="modal-overlay" *ngIf="showNewSession" (click)="closeNewSessionForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>New DeepGuard Session</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeNewSessionForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form (ngSubmit)="createSession()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label" for="sessionName">Session Name</label>
+          <input id="sessionName" type="text" class="form-input" [(ngModel)]="newSessionName" name="sessionName" placeholder="e.g., Video KYC - Candidate Name" [disabled]="creatingSession" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeNewSessionForm()" [disabled]="creatingSession">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newSessionName.trim() || creatingSession">
+            <span *ngIf="creatingSession" class="spinner spinner-sm"></span>
+            {{ creatingSession ? 'Creating...' : 'Create Session' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
