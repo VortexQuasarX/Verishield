@@ -265,5 +265,5 @@ NEXTAUTH_SECRET="a-very-long-and-highly-secure-secret-key"
 ---
 
 <p align="center">
-  Built with ❤️ by the <strong>VeriShield Development Team</strong>.
+  Built with ❤️ by the <strong>VeriShield </strong>.
 </p>
