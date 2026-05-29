@@ -1,8 +1,5 @@
 # 🛡️ VeriShield - Employee Background Verification Platform
 
-<p align="center">
-  <img src="public/logo.svg" alt="VeriShield Logo" width="120px" style="margin-bottom: 20px; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));"/>
-</p>
 
 <h3 align="center">VeriShield</h3>
 
