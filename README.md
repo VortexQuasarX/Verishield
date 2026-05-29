@@ -70,12 +70,12 @@ graph TD
     User([Platform User / Analyst]) -->|Access Dashboard| NextApp[Next.js App Router]
     Candidate([Job Candidate]) -->|Interactive Verification| ChatVerify[WhatsApp/Chat Bot UI]
     
-    subgraph Frontend "Unified Presentation Layer"
+    subgraph Frontend [Unified Presentation Layer]
         NextApp -->|Route Proxy: /angular| AngularApp[Angular Client App]
         NextApp -->|Dashboard View| ReactUI[React + Shadcn UI + Tailwind]
     end
     
-    subgraph Backend "Core Intelligence & API Layer"
+    subgraph Backend [Core Intelligence and API Layer]
         NextApp -->|Next.js API Routes| CoreAPI[REST APIs]
         CoreAPI -->|Biometric Match| LiveID[LiveID Engine]
         CoreAPI -->|Anti-Spoofing| DeepGuard[DeepGuard AI]
@@ -83,7 +83,7 @@ graph TD
         CoreAPI -->|Cryptographic Audit| ChainSeal[ChainSeal Ledger]
     end
     
-    subgraph Data "Persistence & Query Layer"
+    subgraph Data [Persistence and Query Layer]
         CoreAPI -->|ORM| Prisma[Prisma Client]
         Prisma -->|SQLite| DB[(SQLite Database: custom.db)]
     end
