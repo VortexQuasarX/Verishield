@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
@@ -81,7 +81,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private themeService: ThemeService,
     private navLoading: NavigationLoadingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -94,18 +95,22 @@ export class LayoutComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Subscribe to navigation loading
+    // Subscribe to navigation loading - run inside NgZone to ensure change detection
     this.sub.add(
       this.navLoading.loading$.subscribe((loading) => {
-        this.isNavigating = loading;
-        this.cdr.markForCheck();
+        this.ngZone.run(() => {
+          this.isNavigating = loading;
+          this.cdr.markForCheck();
+        });
       })
     );
 
     this.sub.add(
       this.navLoading.progress$.subscribe((progress) => {
-        this.navigationProgress = progress;
-        this.cdr.markForCheck();
+        this.ngZone.run(() => {
+          this.navigationProgress = progress;
+          this.cdr.markForCheck();
+        });
       })
     );
 
@@ -113,6 +118,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.router.events.subscribe((event) => {
         if (event instanceof NavigationEnd) {
+          // Force isNavigating to false on every navigation end
+          this.isNavigating = false;
           this.cdr.markForCheck();
         }
       })

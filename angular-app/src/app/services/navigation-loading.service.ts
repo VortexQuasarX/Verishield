@@ -13,6 +13,7 @@ export class NavigationLoadingService {
   public progress$ = this.progressSubject.asObservable();
 
   private progressInterval: ReturnType<typeof setInterval> | null = null;
+  private safetyTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private router: Router) {
     this.router.events.subscribe((event) => {
@@ -33,6 +34,9 @@ export class NavigationLoadingService {
   }
 
   private startLoading(): void {
+    // Clear any previous safety timeout
+    this.clearSafety();
+
     this.loadingSubject.next(true);
     this.progressSubject.next(20);
 
@@ -40,26 +44,41 @@ export class NavigationLoadingService {
     if (this.progressInterval) clearInterval(this.progressInterval);
     let progress = 20;
     this.progressInterval = setInterval(() => {
-      progress += Math.random() * 20;
+      progress += Math.random() * 25;
       if (progress >= 80) {
         progress = 80;
         if (this.progressInterval) clearInterval(this.progressInterval);
       }
       this.progressSubject.next(progress);
-    }, 80);
+    }, 60);
+
+    // Safety: force-stop loading after 3 seconds maximum
+    // This prevents the loading state from getting stuck permanently
+    this.safetyTimeout = setTimeout(() => {
+      this.stopLoading();
+    }, 3000);
   }
 
   private stopLoading(): void {
+    this.clearSafety();
+
     if (this.progressInterval) {
       clearInterval(this.progressInterval);
       this.progressInterval = null;
     }
     this.progressSubject.next(100);
 
-    // Use microtask instead of setTimeout for faster response
-    Promise.resolve().then(() => {
+    // Use setTimeout (not microtask) to ensure Angular change detection picks it up
+    setTimeout(() => {
       this.loadingSubject.next(false);
       this.progressSubject.next(0);
-    });
+    }, 0);
+  }
+
+  private clearSafety(): void {
+    if (this.safetyTimeout) {
+      clearTimeout(this.safetyTimeout);
+      this.safetyTimeout = null;
+    }
   }
 }

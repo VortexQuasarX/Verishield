@@ -255,14 +255,7 @@
     <div class="notif-backdrop" *ngIf="showNotifications" (click)="closeNotifications()"></div>
 
     <!-- Page Content -->
-    <main class="page-content" [class.route-transitioning]="isNavigating">
-      <!-- Route transition overlay -->
-      <div class="route-overlay" *ngIf="isNavigating">
-        <div class="route-overlay-content">
-          <div class="route-spinner"></div>
-          <span class="route-loading-text">Loading...</span>
-        </div>
-      </div>
+    <main class="page-content">
       <router-outlet />
     </main>
 
