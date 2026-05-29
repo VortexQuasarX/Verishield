@@ -1,4 +1,9 @@
 <div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed">
+  <!-- Navigation Loading Bar -->
+  <div class="nav-loading-bar" [class.active]="isNavigating">
+    <div class="nav-loading-progress" [style.width.%]="navigationProgress"></div>
+  </div>
+
   <!-- Mobile Overlay -->
   <div class="mobile-overlay" [class.active]="showMobileSidebar" (click)="closeMobileSidebar()"></div>
 
@@ -250,7 +255,14 @@
     <div class="notif-backdrop" *ngIf="showNotifications" (click)="closeNotifications()"></div>
 
     <!-- Page Content -->
-    <main class="page-content">
+    <main class="page-content" [class.route-transitioning]="isNavigating">
+      <!-- Route transition overlay -->
+      <div class="route-overlay" *ngIf="isNavigating">
+        <div class="route-overlay-content">
+          <div class="route-spinner"></div>
+          <span class="route-loading-text">Loading...</span>
+        </div>
+      </div>
       <router-outlet />
     </main>
 

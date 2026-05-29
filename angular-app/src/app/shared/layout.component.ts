@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { DashboardService } from '../services/dashboard.service';
 import { ApiService } from '../services/api.service';
 import { ThemeService } from './theme.service';
+import { NavigationLoadingService } from '../services/navigation-loading.service';
 import { AiChatWidgetComponent } from './ai-chat-widget.component';
 import { User } from '../models/user.model';
 import { AppNotification } from '../models/dashboard.model';
@@ -35,6 +36,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
   showNotifications = false;
   sidebarCollapsed = false;
   showMobileSidebar = false;
+  isNavigating = false;
+  navigationProgress = 0;
 
   sections: SidebarSection[] = [
     {
@@ -76,16 +79,45 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private router: Router,
     private dashboardService: DashboardService,
     private apiService: ApiService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private navLoading: NavigationLoadingService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
+
     this.sub.add(
       this.authService.currentUser$.subscribe((user: User | null) => {
         this.currentUser = user;
+        this.cdr.markForCheck();
       })
     );
+
+    // Subscribe to navigation loading
+    this.sub.add(
+      this.navLoading.loading$.subscribe((loading) => {
+        this.isNavigating = loading;
+        this.cdr.markForCheck();
+      })
+    );
+
+    this.sub.add(
+      this.navLoading.progress$.subscribe((progress) => {
+        this.navigationProgress = progress;
+        this.cdr.markForCheck();
+      })
+    );
+
+    // Track route changes for immediate UI update
+    this.sub.add(
+      this.router.events.subscribe((event) => {
+        if (event instanceof NavigationEnd) {
+          this.cdr.markForCheck();
+        }
+      })
+    );
+
     this.loadNotifications();
   }
 
@@ -96,8 +128,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
   loadNotifications(): void {
     this.sub.add(
       this.dashboardService.getNotifications().subscribe({
-        next: (notifs: AppNotification[]) => (this.notifications = notifs),
-        error: () => (this.notifications = []),
+        next: (notifs: AppNotification[]) => {
+          this.notifications = notifs;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.notifications = [];
+        },
       })
     );
   }
@@ -112,6 +149,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   toggleTheme(): void {
     this.themeService.toggle();
+    this.cdr.markForCheck();
   }
 
   toggleNotifications(): void {
@@ -145,6 +183,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   navigate(route: string): void {
+    if (this.router.url === route) return; // Already on this route
     this.router.navigate([route]);
     this.showMobileSidebar = false;
     this.showNotifications = false;
@@ -181,9 +220,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.apiService.markNotificationRead(notification.id).subscribe({
           next: () => {
             notification.isRead = true;
+            this.cdr.markForCheck();
           },
           error: () => {
             notification.isRead = true;
+            this.cdr.markForCheck();
           },
         })
       );

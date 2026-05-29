@@ -8,6 +8,81 @@
   display: flex;
   height: 100vh;
   background: var(--bg-primary);
+  position: relative;
+}
+
+/* ===== Navigation Loading Bar ===== */
+.nav-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.nav-loading-bar.active {
+  opacity: 1;
+}
+
+.nav-loading-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-teal), var(--accent-teal-light), var(--accent-gold));
+  border-radius: 0 2px 2px 0;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(13, 148, 136, 0.5), 0 0 20px rgba(13, 148, 136, 0.2);
+}
+
+/* ===== Route Transition Overlay ===== */
+.route-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: overlayFadeIn 0.15s ease both;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.85; }
+}
+
+.route-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.route-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent-teal);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.route-loading-text {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.page-content.route-transitioning {
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.page-content {
+  transition: opacity 0.2s ease;
 }
 
 /* ===== Mobile Overlay ===== */
