@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -26,7 +26,7 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadSessions();
@@ -55,10 +55,12 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
             this.sessions = [];
           }
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.sessions = [];
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -108,6 +110,7 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
           });
           this.sending = false;
           this.scrollToBottom();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.messages.push({
@@ -117,6 +120,7 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
           });
           this.sending = false;
           this.scrollToBottom();
+          this.cdr.markForCheck();
         },
       })
     );
@@ -159,6 +163,7 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
           }
           this.creatingSession = false;
           this.showNewSession = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.sessions.unshift({
@@ -169,6 +174,7 @@ export class ChatVerifyComponent implements OnInit, OnDestroy {
           });
           this.creatingSession = false;
           this.showNewSession = false;
+          this.cdr.markForCheck();
         },
       })
     );

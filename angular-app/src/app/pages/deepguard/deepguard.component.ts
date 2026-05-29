@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -41,7 +41,7 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadSessions();
@@ -58,6 +58,7 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
         next: (sessions) => {
           this.sessions = sessions;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.sessions = [
@@ -66,6 +67,7 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
             { id: 'dg-003', name: 'Identity Verification - Amit K.', status: 'analyzing', createdAt: new Date().toISOString() },
           ];
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -115,6 +117,7 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
           this.creatingSession = false;
           this.showNewSession = false;
           this.loadSessions();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.sessions.unshift({
@@ -125,6 +128,7 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
           });
           this.creatingSession = false;
           this.showNewSession = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -153,10 +157,12 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
             recommendation: result.recommendation || result.assessment || 'Analysis completed.',
           };
           this.analyzing = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.analysisResult = this.mockAnalysis;
           this.analyzing = false;
+          this.cdr.markForCheck();
         },
       })
     );

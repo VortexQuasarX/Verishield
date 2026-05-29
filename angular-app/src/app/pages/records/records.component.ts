@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecordsService } from '../../services/records.service';
@@ -49,7 +49,8 @@ export class RecordsComponent implements OnInit, OnDestroy {
 
   constructor(
     private recordsService: RecordsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -81,9 +82,11 @@ export class RecordsComponent implements OnInit, OnDestroy {
           this.totalPages = response.totalPages;
           this.accessLevel = response.accessLevel;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -190,10 +193,12 @@ export class RecordsComponent implements OnInit, OnDestroy {
           this.creatingRecord = false;
           this.showCreateModal = false;
           this.loadRecords();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.creatingRecord = false;
           this.createError = 'Failed to create record. Please try again.';
+          this.cdr.markForCheck();
         },
       })
     );

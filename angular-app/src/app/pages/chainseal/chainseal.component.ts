@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -23,7 +23,7 @@ export class ChainSealComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadRecords();
@@ -55,6 +55,7 @@ export class ChainSealComponent implements OnInit, OnDestroy {
             this.records = Array.isArray(response) ? response : [];
           }
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.records = [
@@ -63,6 +64,7 @@ export class ChainSealComponent implements OnInit, OnDestroy {
             { id: 'cs-003', hash: '0x4d8a...b21c', recordType: 'Education Verification', sealedAt: new Date(Date.now() - 7200000).toISOString(), verified: true, previousHash: '0x9c2e...f47d' },
           ];
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -94,6 +96,7 @@ export class ChainSealComponent implements OnInit, OnDestroy {
         next: (newRecord) => {
           this.records.unshift(newRecord);
           this.sealing = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           // Fallback: create a local mock record
@@ -108,6 +111,7 @@ export class ChainSealComponent implements OnInit, OnDestroy {
           };
           this.records.unshift(newRecord);
           this.sealing = false;
+          this.cdr.markForCheck();
         },
       })
     );

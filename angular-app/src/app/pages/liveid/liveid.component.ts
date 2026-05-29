@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -32,7 +32,7 @@ export class LiveIdComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadVerifications();
@@ -49,6 +49,7 @@ export class LiveIdComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.verifications = data;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.verifications = [
@@ -57,6 +58,7 @@ export class LiveIdComponent implements OnInit, OnDestroy {
             { id: 'lid-003', candidateName: 'Amit Kumar', matchScore: 91, livenessScore: 95, status: 'verified', createdAt: new Date(Date.now() - 7200000).toISOString() },
           ];
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -73,11 +75,13 @@ export class LiveIdComponent implements OnInit, OnDestroy {
           this.currentStep = 2;
           this.analyzing = false;
           this.loadVerifications();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.verificationResult = this.mockResult;
           this.currentStep = 2;
           this.analyzing = false;
+          this.cdr.markForCheck();
         },
       })
     );

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
@@ -18,7 +18,7 @@ export class AiChatWidgetComponent implements OnInit {
   inputMessage = '';
   isLoading = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.messages = [
@@ -56,6 +56,7 @@ export class AiChatWidgetComponent implements OnInit {
         });
         this.isLoading = false;
         this.scrollToBottom();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.messages.push({
@@ -64,6 +65,7 @@ export class AiChatWidgetComponent implements OnInit {
           timestamp: new Date().toISOString(),
         });
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
     });
 

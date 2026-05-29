@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -36,7 +36,7 @@ export class ForensiDocComponent implements OnInit {
     analyzedAt: new Date().toISOString(),
   };
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {}
 
@@ -97,11 +97,13 @@ export class ForensiDocComponent implements OnInit {
           this.result = data;
           this.analysisComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.result = this.mockResult;
           this.analysisComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
     } else {
@@ -110,11 +112,13 @@ export class ForensiDocComponent implements OnInit {
           this.result = data;
           this.analysisComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.result = this.mockResult;
           this.analysisComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
     }

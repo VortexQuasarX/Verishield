@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -33,7 +33,7 @@ export class NexusComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadTasks();
@@ -51,11 +51,13 @@ export class NexusComponent implements OnInit, OnDestroy {
           this.tasks = tasks;
           this.loading = false;
           this.updateAgentStatus();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.tasks = this.getMockTasks();
           this.loading = false;
           this.updateAgentStatus();
+          this.cdr.markForCheck();
         },
       })
     );
@@ -131,6 +133,7 @@ export class NexusComponent implements OnInit, OnDestroy {
           this.creatingTask = false;
           this.showNewTaskForm = false;
           this.loadTasks();
+          this.cdr.markForCheck();
         },
         error: () => {
           const newTask: NexusTask = {
@@ -146,6 +149,7 @@ export class NexusComponent implements OnInit, OnDestroy {
           this.creatingTask = false;
           this.showNewTaskForm = false;
           this.updateAgentStatus();
+          this.cdr.markForCheck();
         },
       })
     );

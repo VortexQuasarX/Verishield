@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
@@ -62,7 +62,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private userService: UserService, private apiService: ApiService) {}
+  constructor(private userService: UserService, private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -88,9 +88,11 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.users = users;
           this.applyFilter();
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -145,6 +147,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.showCreateModal = false;
           this.showNotification('User created successfully', 'success');
           this.loadUsers();
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.creatingUser = false;
@@ -153,6 +156,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           } else {
             this.createError = 'Failed to create user. Please try again.';
           }
+          this.cdr.markForCheck();
         },
       })
     );
@@ -193,10 +197,12 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.showEditModal = false;
           this.showNotification('User updated successfully', 'success');
           this.loadUsers();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.savingUser = false;
           this.editError = 'Failed to update user. Please try again.';
+          this.cdr.markForCheck();
         },
       })
     );
@@ -223,11 +229,13 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.showDeleteModal = false;
           this.showNotification('User deleted successfully', 'success');
           this.loadUsers();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.deletingInProgress = false;
           this.showDeleteModal = false;
           this.showNotification('Failed to delete user', 'error');
+          this.cdr.markForCheck();
         },
       })
     );
@@ -243,9 +251,11 @@ export class AdminComponent implements OnInit, OnDestroy {
             'success'
           );
           this.loadUsers();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.showNotification('Failed to update user status', 'error');
+          this.cdr.markForCheck();
         },
       })
     );
@@ -259,9 +269,11 @@ export class AdminComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.settings = data;
           this.settingsLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.settingsLoading = false;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -276,10 +288,12 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.settingsSaved = true;
           this.showNotification('Settings saved successfully', 'success');
           setTimeout(() => (this.settingsSaved = false), 3000);
+          this.cdr.markForCheck();
         },
         error: () => {
           this.settingsSaving = false;
           this.showNotification('Failed to save settings', 'error');
+          this.cdr.markForCheck();
         },
       })
     );
@@ -301,10 +315,12 @@ export class AdminComponent implements OnInit, OnDestroy {
             details: log.details || '',
           }));
           this.activitiesLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.activities = [];
           this.activitiesLoading = false;
+          this.cdr.markForCheck();
         },
       })
     );

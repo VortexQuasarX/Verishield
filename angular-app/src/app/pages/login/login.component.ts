@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -56,7 +56,8 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   onSubmit(): void {
@@ -71,6 +72,7 @@ export class LoginComponent {
     this.authService.login(this.email, this.password, this.selectedRole).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.isLoading = false;
@@ -81,6 +83,7 @@ export class LoginComponent {
         } else {
           this.errorMessage = 'An error occurred. Please try again.';
         }
+        this.cdr.markForCheck();
       },
       complete: () => {
         this.isLoading = false;

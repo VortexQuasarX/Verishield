@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -43,7 +43,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private apiService: ApiService,
     private themeService: ThemeService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -112,10 +113,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.stats = data;
           this.loading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -130,10 +133,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.trends = data;
           this.trendsLoading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.trendsLoading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -148,10 +153,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.activities = data;
           this.activitiesLoading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.activitiesLoading = false;
           this.activeRequests--;
+          this.cdr.markForCheck();
         },
       })
     );
@@ -160,8 +167,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadNotifications(): void {
     this.sub.add(
       this.dashboardService.getNotifications().subscribe({
-        next: (data) => (this.notifications = data),
-        error: () => (this.notifications = []),
+        next: (data) => { this.notifications = data; this.cdr.markForCheck(); },
+        error: () => { this.notifications = []; this.cdr.markForCheck(); },
       })
     );
   }
@@ -169,7 +176,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadPipeline(): void {
     this.sub.add(
       this.apiService.getPipeline().subscribe({
-        next: (data) => (this.pipelineData = data),
+        next: (data) => { this.pipelineData = data; this.cdr.markForCheck(); },
         error: () => {
           this.pipelineData = [
             { name: 'Submitted', count: 45, percentage: 100 },
@@ -178,6 +185,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             { name: 'Chain Seal', count: 8, percentage: 18 },
             { name: 'Complete', count: 38, percentage: 84 },
           ];
+          this.cdr.markForCheck();
         },
       })
     );
@@ -186,7 +194,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadInsights(): void {
     this.sub.add(
       this.apiService.getInsights().subscribe({
-        next: (data) => (this.aiInsights = (data.insights || data as any).slice(0, 5)),
+        next: (data) => { this.aiInsights = (data.insights || data as any).slice(0, 5); this.cdr.markForCheck(); },
         error: () => {
           this.aiInsights = [
             { id: '1', title: 'High-Risk Pattern Detected', description: '3 verifications from the same employer show inconsistent data patterns.', type: 'risk', confidence: 92, createdAt: new Date().toISOString() },
@@ -194,6 +202,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             { id: '3', title: 'DPDP Compliance Alert', description: 'New consent requirements effective next month. Update templates.', type: 'compliance', confidence: 95, createdAt: new Date().toISOString() },
             { id: '4', title: 'Auto-escalation Recommended', description: '2 cases exceed 48hr SLA threshold. Consider manual review.', type: 'recommendation', confidence: 88, createdAt: new Date().toISOString() },
           ];
+          this.cdr.markForCheck();
         },
       })
     );

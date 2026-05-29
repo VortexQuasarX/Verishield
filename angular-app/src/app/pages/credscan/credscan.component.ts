@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -42,7 +42,7 @@ export class CredScanComponent implements OnInit, OnDestroy {
 
   private sub = new Subscription();
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadInsights();
@@ -51,8 +51,8 @@ export class CredScanComponent implements OnInit, OnDestroy {
   loadInsights(): void {
     this.sub.add(
       this.apiService.getInsights().subscribe({
-        next: (data) => (this.insights = (data.insights || data as any).slice(0, 3)),
-        error: () => (this.insights = []),
+        next: (data) => { this.insights = (data.insights || data as any).slice(0, 3); this.cdr.markForCheck(); },
+        error: () => { this.insights = []; this.cdr.markForCheck(); },
       })
     );
   }
@@ -72,6 +72,7 @@ export class CredScanComponent implements OnInit, OnDestroy {
           this.riskAnalysis = result;
           this.scanComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.riskAnalysis = {
@@ -88,6 +89,7 @@ export class CredScanComponent implements OnInit, OnDestroy {
           };
           this.scanComplete = true;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
       })
     );
