@@ -36,7 +36,9 @@ export class NexusComponent implements OnInit, OnDestroy {
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadTasks();
+    setTimeout(() => {
+      this.loadTasks();
+    }, 0);
   }
 
   ngOnDestroy(): void {

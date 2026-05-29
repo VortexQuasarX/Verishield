@@ -54,7 +54,12 @@ function toResponseRecord(r: {
   if (r.status === 'completed' || r.status === 'failed' || r.status === 'flagged') {
     progress = 100;
   } else if (r.status === 'in_progress') {
-    progress = Math.floor(Math.random() * 80) + 10;
+    // Deterministic progress based on time elapsed since submission
+    const elapsed = Date.now() - r.submittedDate.getTime();
+    const totalEstimate = 3 * 24 * 60 * 60 * 1000; // 3 days estimated total
+    progress = Math.min(Math.max(Math.floor((elapsed / totalEstimate) * 100), 10), 90);
+  } else if (r.status === 'pending') {
+    progress = 0;
   }
 
   return {

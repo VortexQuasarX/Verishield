@@ -54,7 +54,11 @@ export class RecordsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadRecords();
+    // Use setTimeout to ensure change detection has settled before loading data
+    // This prevents the "loading forever" bug when navigating between routes
+    setTimeout(() => {
+      this.loadRecords();
+    }, 0);
   }
 
   ngOnDestroy(): void {

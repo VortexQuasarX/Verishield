@@ -44,7 +44,9 @@ export class DeepGuardComponent implements OnInit, OnDestroy {
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadSessions();
+    setTimeout(() => {
+      this.loadSessions();
+    }, 0);
   }
 
   ngOnDestroy(): void {

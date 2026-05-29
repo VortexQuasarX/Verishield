@@ -35,7 +35,9 @@ export class LiveIdComponent implements OnInit, OnDestroy {
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadVerifications();
+    setTimeout(() => {
+      this.loadVerifications();
+    }, 0);
   }
 
   ngOnDestroy(): void {

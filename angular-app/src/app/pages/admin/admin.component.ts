@@ -65,9 +65,13 @@ export class AdminComponent implements OnInit, OnDestroy {
   constructor(private userService: UserService, private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadUsers();
-    this.loadSettings();
-    this.loadActivities();
+    // Use setTimeout to ensure change detection has settled before loading data
+    // This prevents the "loading forever" bug when navigating between routes
+    setTimeout(() => {
+      this.loadUsers();
+      this.loadSettings();
+      this.loadActivities();
+    }, 0);
   }
 
   ngOnDestroy(): void {

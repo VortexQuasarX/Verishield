@@ -48,12 +48,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadStats();
-    this.loadTrends();
-    this.loadActivities();
-    this.loadNotifications();
-    this.loadPipeline();
-    this.loadInsights();
+    // Use setTimeout to ensure change detection has settled before loading data
+    // This prevents the "loading forever" bug when navigating between routes
+    setTimeout(() => {
+      this.loadStats();
+      this.loadTrends();
+      this.loadActivities();
+      this.loadNotifications();
+      this.loadPipeline();
+      this.loadInsights();
+    }, 0);
   }
 
   ngOnDestroy(): void {

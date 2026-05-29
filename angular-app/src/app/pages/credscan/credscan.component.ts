@@ -45,7 +45,9 @@ export class CredScanComponent implements OnInit, OnDestroy {
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadInsights();
+    setTimeout(() => {
+      this.loadInsights();
+    }, 0);
   }
 
   loadInsights(): void {

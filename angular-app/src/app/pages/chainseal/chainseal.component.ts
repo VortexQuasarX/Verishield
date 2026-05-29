@@ -26,7 +26,9 @@ export class ChainSealComponent implements OnInit, OnDestroy {
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadRecords();
+    setTimeout(() => {
+      this.loadRecords();
+    }, 0);
   }
 
   ngOnDestroy(): void {

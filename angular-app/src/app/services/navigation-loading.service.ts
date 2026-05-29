@@ -56,10 +56,10 @@ export class NavigationLoadingService {
     }
     this.progressSubject.next(100);
 
-    // Minimal delay to show 100% completion
-    setTimeout(() => {
+    // Use microtask instead of setTimeout for faster response
+    Promise.resolve().then(() => {
       this.loadingSubject.next(false);
       this.progressSubject.next(0);
-    }, 80);
+    });
   }
 }

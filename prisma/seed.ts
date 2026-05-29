@@ -288,7 +288,7 @@ async function main() {
         userId,
         title: 'Fraud Alert',
         message: 'Deepfake detected in Ananya Desai interview session (87.3% fraud score). Immediate review required.',
-        type: 'critical',
+        type: 'error',
         isRead: false,
         createdAt: new Date(Date.now() - 2 * 86400000),
       },
@@ -341,14 +341,14 @@ async function main() {
   const activityLogs = await Promise.all([
     prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Login', details: 'Admin logged in from 192.168.1.1', category: 'auth', createdAt: new Date(Date.now() - 1 * 3600000) } }),
     prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Verification Started', details: 'Started verification for Priya Sharma (VER-2024-001)', category: 'verification', createdAt: new Date(Date.now() - 5 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Document Reviewed', details: 'Reviewed Aadhaar card for Rahul Verma', category: 'document', createdAt: new Date(Date.now() - 6 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Fraud Alert Triggered', details: 'Deepfake detected in Ananya Desai session', category: 'security', createdAt: new Date(Date.now() - 2 * 86400000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Document Reviewed', details: 'Reviewed Aadhaar card for Rahul Verma', category: 'verification', createdAt: new Date(Date.now() - 6 * 3600000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Fraud Alert Triggered', details: 'Deepfake detected in Ananya Desai session', category: 'admin', createdAt: new Date(Date.now() - 2 * 86400000) } }),
     prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Verification Completed', details: 'Completed verification for Priya Sharma (VER-2024-001)', category: 'verification', createdAt: new Date(Date.now() - 2 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Consent Received', details: 'Rahul Verma provided consent for verification', category: 'consent', createdAt: new Date(Date.now() - 4 * 3600000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Consent Received', details: 'Rahul Verma provided consent for verification', category: 'verification', createdAt: new Date(Date.now() - 4 * 3600000) } }),
     prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'LiveID Check', details: 'Arjun Mehta passed LiveID verification (97.3% liveness)', category: 'verification', createdAt: new Date(Date.now() - 1 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Nexus Task Created', details: 'Auto-escalation task created for high-risk verification', category: 'automation', createdAt: new Date(Date.now() - 2 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Settings Updated', details: 'Updated API key rotation settings', category: 'settings', createdAt: new Date(Date.now() - 10 * 3600000) } }),
-    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'SLA Warning', details: '3 verifications approaching SLA breach', category: 'sla', createdAt: new Date(Date.now() - 45 * 60000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Nexus Task Created', details: 'Auto-escalation task created for high-risk verification', category: 'ai', createdAt: new Date(Date.now() - 2 * 3600000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'Settings Updated', details: 'Updated API key rotation settings', category: 'admin', createdAt: new Date(Date.now() - 10 * 3600000) } }),
+    prisma.activityLog.create({ data: { userId: 'admin', userName: 'Admin', action: 'SLA Warning', details: '3 verifications approaching SLA breach', category: 'system', createdAt: new Date(Date.now() - 45 * 60000) } }),
   ]);
 
   console.log('Created 10 activity logs:', activityLogs.map(a => a.id).join(', '));

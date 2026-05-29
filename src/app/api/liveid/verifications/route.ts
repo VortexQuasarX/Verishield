@@ -40,7 +40,13 @@ export async function POST(request: NextRequest) {
     const record = await db.liveIDRecord.create({
       data: {
         candidateName,
-        idNumber: idNumber.replace(/(?=\d{4}\d{4})\d/g, 'X'),
+        idNumber: (() => {
+          const digits = idNumber.replace(/\D/g, '');
+          if (digits.length > 8) {
+            return digits.slice(0, 4) + 'XXXX' + digits.slice(-4);
+          }
+          return idNumber;
+        })(),
         status: 'pending',
       },
     });

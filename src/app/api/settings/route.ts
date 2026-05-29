@@ -24,8 +24,9 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 
 // Map flat DB key-value pairs → Angular SettingsData format
 function toSettingsData(flat: Record<string, string>) {
+  const turnaround = flat.default_turnaround ?? '7';
   return {
-    defaultTurnaround: flat.default_turnaround ?? '7',
+    defaultTurnaround: `${turnaround} hours`,
     autoEscalation: flat.auto_escalation === 'true',
     apiKey: flat.api_key ?? '',
     webhookUrl: flat.webhook_url ?? '',
@@ -36,8 +37,9 @@ function toSettingsData(flat: Record<string, string>) {
 
 // Map Angular SettingsData format → flat key-value pairs for DB storage
 function fromSettingsData(data: Record<string, unknown>): Record<string, string> {
+  const turnaround = String(data.defaultTurnaround ?? '7').replace(/\s*hours?\s*/i, '').trim() || '7';
   return {
-    default_turnaround: String(data.defaultTurnaround ?? '7'),
+    default_turnaround: turnaround,
     auto_escalation: String(data.autoEscalation ?? false),
     api_key: String(data.apiKey ?? ''),
     webhook_url: String(data.webhookUrl ?? ''),
