@@ -34,19 +34,19 @@ export class NavigationLoadingService {
 
   private startLoading(): void {
     this.loadingSubject.next(true);
-    this.progressSubject.next(10);
+    this.progressSubject.next(20);
 
     // Simulate progress increments for smooth UX
     if (this.progressInterval) clearInterval(this.progressInterval);
-    let progress = 10;
+    let progress = 20;
     this.progressInterval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress >= 85) {
-        progress = 85;
+      progress += Math.random() * 20;
+      if (progress >= 80) {
+        progress = 80;
         if (this.progressInterval) clearInterval(this.progressInterval);
       }
       this.progressSubject.next(progress);
-    }, 150);
+    }, 80);
   }
 
   private stopLoading(): void {
@@ -56,10 +56,10 @@ export class NavigationLoadingService {
     }
     this.progressSubject.next(100);
 
-    // Small delay to show 100% before hiding
+    // Minimal delay to show 100% completion
     setTimeout(() => {
       this.loadingSubject.next(false);
       this.progressSubject.next(0);
-    }, 200);
+    }, 80);
   }
 }

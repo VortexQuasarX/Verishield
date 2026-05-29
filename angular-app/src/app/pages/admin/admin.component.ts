@@ -83,7 +83,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     this.loading = true;
     this.sub.add(
-      this.userService.getUsers(200).subscribe({
+      this.userService.getUsers().subscribe({
         next: (users) => {
           this.users = users;
           this.applyFilter();

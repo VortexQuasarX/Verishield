@@ -63,7 +63,6 @@ export class RecordsComponent implements OnInit, OnDestroy {
   loadRecords(): void {
     this.loading = true;
     const params: RecordsQueryParams = {
-      delay: 200,
       page: this.currentPage,
       pageSize: this.pageSize,
       search: this.searchQuery || undefined,
