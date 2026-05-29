@@ -55,3 +55,4 @@ server.log
 db/*.db
 server.pid
 .env.local
+/public/angular/
